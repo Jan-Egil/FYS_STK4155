@@ -17,6 +17,58 @@ import sys
 
 #print(__doc__)
 
+"""
+Defining different functions to be used
+"""
+
+def R2(y,ytilde):
+    """
+    Takes an array of data points and corresponding predicted values. Calculates the R2 score
+
+    Input:
+    y: Array of actual datapoints
+    ytilde: Array of preducted datapoints
+
+    Output:
+    R2_score: Self explanatory
+    """
+    if len(y) != len(ytilde):
+        sys.exit(0)
+
+    n = len(y)
+    sample_mean = 0
+    for i in range(n):
+        sample_mean += y[i]
+    sample_mean = sample_mean/n
+
+    sum_above = 0
+    sum_below = 0
+    for i in range(n):
+        sum_above += (y[i] - ytilde[i])**2
+        sum_below += (y[i] - sample_mean)**2
+    R2_score = 1 - (sum_above/sum_below)
+    return R2_score
+
+def MSE(y,ytilde):
+    """
+    Takes an array of data points and corresponding predicted values. Calculates the mean squared error
+
+    Input:
+    y: Array of actual datapoints
+    ytilde: Array of predicted datapoints
+
+    Output:
+    Mean_Squared_Error: self-explanatory
+    """
+    if len(y) != len(ytilde):
+        sys.exit(0)
+    sum = 0
+    n = len(y)
+    for i in range(n):
+        sum += (y[i]-ytilde[i])**2
+    Mean_Squared_Error = sum/n
+    return Mean_Squared_Error
+
 def frankefunc_analytic(x,y):
     """
     Just your regular Franke function
@@ -87,8 +139,9 @@ def DesignMatrixCreator_2dpol(p,x,y):
     return X
 
 """
-Create N random pairs of x & y values
+Part a)
 """
+
 N = 1000
 p = 5 #Order of polynomial
 noise = 0.1 #Factor of noise in data
@@ -121,3 +174,13 @@ R2_train = metric.r2_score(z_train,z_tilde_train)
 
 MSE_test = metric.mean_squared_error(z_test,z_tilde_test)
 R2_test = metric.r2_score(z_test,z_tilde_test)
+
+R2_train2 = R2(z_test,z_tilde_test)
+
+print(R2_test)
+print(R2_train2)
+
+
+"""
+Part b)
+"""
