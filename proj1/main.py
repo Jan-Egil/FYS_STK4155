@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 import sklearn.metrics as metric
 import sys
 
-print(__doc__)
+#print(__doc__)
 
 def frankefunc(x,y):
     term1 = 0.75*np.exp(-((9*x-2)**2)/4 - ((9*x-2)**2)/4)
@@ -24,20 +24,33 @@ def frankefunc(x,y):
     return term1 + term2 + term3 - term4
 
 def frankefunc_noise(x,y,noise):
+    """
+    FrankeFunc
+
+    Input:
+    x,y: position (x,y)
+    noise: Factor of noise
+
+    Output:
+    Franke Function value at position (x,y) with added noise
+    """
+    if len(x) != len(y):
+        sys.exit(0)
+
+    N = len(x)
     term1 = 0.75*np.exp(-((9*x-2)**2)/4 - ((9*x-2)**2)/4)
     term2 = 0.75*np.exp(-((9*x+1)**2)/49 - (9*y+1)/10)
     term3 = 0.5*np.exp(-((9*x-7)**2)/4 - ((9*y-3)**2)/4)
     term4 = 0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-    return term1 + term2 + term3 - term4 + noise*np.random.randn(np.shape(x))
+    return term1 + term2 + term3 - term4 + noise*np.random.randn(N)
 
 def DesignMatrixCreator_2dpol(p,x,y):
     """
-    Creates a design matrix for 2D polynomial
+    Creates a design matrix for 2 variable polynomial (x,y)
 
     Input:
-    N: Number of data points
     p: Degree of polynomial
-    x: Array of x-values
+    x, y: Array of x-values & y-values
 
     Output:
     X: Design matrix
@@ -57,19 +70,23 @@ def DesignMatrixCreator_2dpol(p,x,y):
             X[:,column] = (x**j)*(y**(i-j))
             column += 1
 
-    del(column)
-    print(X)
     return X
 
-#Create N random pairs of x & y values
+"""
+Create N random pairs of x & y values
+"""
 N = 100
+p = 2 #Order of polynomial
+noise = 0.1 #Factor of noise in data
+
 xy = np.random.rand(N,2)
 x = xy[:,0]; y = xy[:,1]
 
-p = 2 #Order of polynomial
 
-noise = 0.1
 X = DesignMatrixCreator_2dpol(p,x,y)
+z = frankefunc_noise(x,y,noise)
+
+X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
 
 """
 for i in range(1,p+1):
