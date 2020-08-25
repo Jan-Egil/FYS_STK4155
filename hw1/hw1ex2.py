@@ -8,7 +8,6 @@ x = np.random.rand(100,1)
 y = 5*x**2+2+0.5*np.random.randn(100,1)
 
 parametrization = np.polyfit(x[:,0],y[:,0],2)
-print(parametrization)
 
 def poly2(p):
     x_poly = np.linspace(0,1,100)
