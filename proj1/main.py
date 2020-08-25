@@ -12,11 +12,25 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import sklearn.metrics as metric
+from sklearn.preprocessing import StandardScaler
 import sys
 
 #print(__doc__)
 
-def frankefunc(x,y):
+def frankefunc_analytic(x,y):
+    """
+    Just your regular Franke function
+
+    Input:
+    x,y: position (x,y)
+
+    Output:
+    Franke Function value at position (x,y)
+    """
+
+    if len(x) != len(y):
+        sys.exit(0)
+
     term1 = 0.75*np.exp(-((9*x-2)**2)/4 - ((9*x-2)**2)/4)
     term2 = 0.75*np.exp(-((9*x+1)**2)/49 - (9*y+1)/10)
     term3 = 0.5*np.exp(-((9*x-7)**2)/4 - ((9*y-3)**2)/4)
@@ -75,8 +89,8 @@ def DesignMatrixCreator_2dpol(p,x,y):
 """
 Create N random pairs of x & y values
 """
-N = 100
-p = 2 #Order of polynomial
+N = 1000
+p = 5 #Order of polynomial
 noise = 0.1 #Factor of noise in data
 
 xy = np.random.rand(N,2)
@@ -89,13 +103,21 @@ z = frankefunc_noise(x,y,noise)
 X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
 
 """
-for i in range(1,p+1):
-    X = np.zeros([len(x),i+1])
-
-    for j in range(i+1):
-        X[:,j] = (x**j)*(y**(i-j))
-
-    z = frankefunc_noise(x,y,noise)
-    m = np.linalg.lstsq(X,z)
-    print(m)
+Need to understand how scaling works(!!!!)
 """
+scaler = StandardScaler()
+scaler.fit(X_train)
+X_train_scaled = scaler.transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+
+beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+
+z_tilde_train = X_train @ beta
+z_tilde_test = X_test @ beta
+
+MSE_train = metric.mean_squared_error(z_train,z_tilde_train)
+R2_train = metric.r2_score(z_train,z_tilde_train)
+
+MSE_test = metric.mean_squared_error(z_test,z_tilde_test)
+R2_test = metric.r2_score(z_test,z_tilde_test)
