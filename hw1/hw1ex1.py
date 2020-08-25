@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 
 #file = open('EoS.csv','r')
@@ -16,4 +15,5 @@ X[:,0] = 1
 X[:,1] = rho
 X[:,2] = rho**2
 X[:,3] = rho**3
+
 print(X)
