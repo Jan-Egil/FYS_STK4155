@@ -1,4 +1,1 @@
-"# FYS_STK4155" 
-"# FYS_STK4155" 
-"# FYS_STK4155" 
-"# FYS_STK4155" 
+This is the working folder for FYS-STK4155
