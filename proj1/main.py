@@ -69,6 +69,26 @@ def MSE(y,ytilde):
     Mean_Squared_Error = sum/n
     return Mean_Squared_Error
 
+def ME(y,ytilde):
+    """
+    Takes an array of data points and corresponding predicted values. Calculates the mean (absolute) error
+
+    Input:
+    y: Array of actual datapoints
+    ytilde: Array of predicted datapoints
+
+    Output:
+    Mean_Error: self-explanatory
+    """
+    if len(y) != len(ytilde):
+        sys.exit(0)
+    sum = 0
+    n = len(y)
+    for i in range(n):
+        sum += np.abs((y[i]-ytilde[i]))
+    Mean_Error = sum/n
+    return Mean_Error
+
 def frankefunc_analytic(x,y):
     """
     Just your regular Franke function
@@ -138,49 +158,96 @@ def DesignMatrixCreator_2dpol(p,x,y):
 
     return X
 
+print("Which task do you want to run?")
+exercise = input("Press any letter between a & g: ")
+
 """
 Part a)
 """
 
-N = 1000
-p = 5 #Order of polynomial
-noise = 0.1 #Factor of noise in data
+if exercise == "a":
+    N = 1000
+    p = 5 #Order of polynomial
+    noise = 0.1 #Factor of noise in data
 
-xy = np.random.rand(N,2)
-x = xy[:,0]; y = xy[:,1]
-
-
-X = DesignMatrixCreator_2dpol(p,x,y)
-z = frankefunc_noise(x,y,noise)
-
-X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
-
-"""
-Need to understand how scaling works(!!!!)
-"""
-scaler = StandardScaler()
-scaler.fit(X_train)
-X_train_scaled = scaler.transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+    xy = np.random.rand(N,2)
+    x = xy[:,0]; y = xy[:,1]
 
 
-beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    X = DesignMatrixCreator_2dpol(p,x,y)
+    z = frankefunc_noise(x,y,noise)
 
-z_tilde_train = X_train @ beta
-z_tilde_test = X_test @ beta
+    X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
 
-MSE_train = metric.mean_squared_error(z_train,z_tilde_train)
-R2_train = metric.r2_score(z_train,z_tilde_train)
+    """
+    Need to understand how scaling works(!!!!)
+    """
 
-MSE_test = metric.mean_squared_error(z_test,z_tilde_test)
-R2_test = metric.r2_score(z_test,z_tilde_test)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
 
-R2_train2 = R2(z_test,z_tilde_test)
 
-print(R2_test)
-print(R2_train2)
+    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+
+    z_tilde_train = X_train @ beta
+    z_tilde_test = X_test @ beta
+
+    MSE_train_scikit = metric.mean_squared_error(z_train,z_tilde_train)
+    R2_train_scikit = metric.r2_score(z_train,z_tilde_train)
+
+    MSE_test_scikit = metric.mean_squared_error(z_test,z_tilde_test)
+    R2_test_scikit = metric.r2_score(z_test,z_tilde_test)
+
+    MSE_train = MSE(z_train,z_tilde_train)
+    R2_train = R2(z_train,z_tilde_train)
+
+    MSE_test = MSE(z_test,z_tilde_test)
+    R2_test = MSE(z_test,z_tilde_test)
 
 
 """
 Part b)
 """
+
+if exercise == "b":
+    MaxPoly = 20
+    N = 100
+    noise = 0.1
+
+    MSE_test_array = np.zeros(MaxPoly)
+    MSE_train_array = np.zeros(MaxPoly)
+    xy = np.random.rand(N,2)
+    x = xy[:,0]; y = xy[:,1]
+    z = frankefunc_noise(x,y,noise)
+
+    for polydeg in range(1,MaxPoly+1):
+        print(polydeg)
+
+        X = DesignMatrixCreator_2dpol(polydeg,x,y)
+
+        X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+
+        """
+        Insert scaling here
+        """
+
+        beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+
+        z_tilde_train = X_train @ beta
+        z_tilde_test = X_test @ beta
+
+        MSE_train = MSE(z_train,z_tilde_train)
+        MSE_test = MSE(z_test,z_tilde_test)
+
+        MSE_train = metric.mean_squared_error(z_train,z_tilde_train)
+        MSE_test = metric.mean_squared_error(z_test,z_tilde_test)
+
+        MSE_train_array[polydeg-1] = np.log(MSE_train)
+        MSE_test_array[polydeg-1] = np.log(MSE_test)
+
+    plt.plot(MSE_train_array,label="Train")
+    plt.plot(MSE_test_array,label="Test")
+    plt.legend(); plt.grid()
+    plt.show()
