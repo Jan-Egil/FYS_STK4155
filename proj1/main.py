@@ -155,7 +155,6 @@ def DesignMatrixCreator_2dpol(p,x,y):
         for j in range(i+1):
             X[:,column] = (x**j)*(y**(i-j))
             column += 1
-
     return X
 
 print("Which task do you want to run?")
@@ -167,7 +166,7 @@ Part a)
 
 if exercise == "a":
     N = 1000
-    p = 5 #Order of polynomial
+    p = 2 #Order of polynomial
     noise = 0.1 #Factor of noise in data
 
     xy = np.random.rand(N,2)
@@ -214,40 +213,44 @@ Part b)
 if exercise == "b":
     MaxPoly = 20
     N = 100
-    noise = 0.1
+    noise = 0.2
+    testsize = 0.2
 
-    MSE_test_array = np.zeros(MaxPoly)
-    MSE_train_array = np.zeros(MaxPoly)
     xy = np.random.rand(N,2)
     x = xy[:,0]; y = xy[:,1]
     z = frankefunc_noise(x,y,noise)
 
+    MSE_train_array = np.zeros(MaxPoly)
+    MSE_test_array = np.zeros(MaxPoly)
+
     for polydeg in range(1,MaxPoly+1):
-        print(polydeg)
-
         X = DesignMatrixCreator_2dpol(polydeg,x,y)
-
-        X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+        X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
 
         """
         Insert scaling here
         """
+        scaler = StandardScaler()
+        scaler.fit(X_train)
+        X_train_scaled = scaler.transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
 
-        beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+        beta_optimal = np.linalg.pinv(X_train) @ z_train
 
-        z_tilde_train = X_train @ beta
-        z_tilde_test = X_test @ beta
+        z_tilde_train = X_train @ beta_optimal
+        z_tilde_test = X_test @ beta_optimal
 
         MSE_train = MSE(z_train,z_tilde_train)
         MSE_test = MSE(z_test,z_tilde_test)
 
-        MSE_train = metric.mean_squared_error(z_train,z_tilde_train)
-        MSE_test = metric.mean_squared_error(z_test,z_tilde_test)
+        MSE_train_array[polydeg-1] = (MSE_train)
+        MSE_test_array[polydeg-1] = (MSE_test)
 
-        MSE_train_array[polydeg-1] = np.log(MSE_train)
-        MSE_test_array[polydeg-1] = np.log(MSE_test)
-
-    plt.plot(MSE_train_array,label="Train")
-    plt.plot(MSE_test_array,label="Test")
-    plt.legend(); plt.grid()
+    polydeg_array = np.arange(1,MaxPoly+1)
+    plt.plot(polydeg_array,MSE_train_array,label="Train")
+    plt.plot(polydeg_array,MSE_test_array,label="Test")
+    plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
+    plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+    plt.title("N = %i, test size = %.1f%%, noise = %.2f"% (N,testsize*100,noise),fontsize="x-large")
+    plt.legend(); plt.grid(); plt.semilogy()
     plt.show()
