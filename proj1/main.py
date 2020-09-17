@@ -145,6 +145,10 @@ def DesignMatrixCreator_2dpol(p,x,y):
     if len(x) != len(y):
         sys.exit(0)
 
+    if len(x.shape) > 1:
+		x = np.ravel(x)
+		y = np.ravel(y)
+
     N = len(x)
     num_of_terms = int(((p+1)*(p+2))/2)
 
