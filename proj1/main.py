@@ -14,12 +14,20 @@ from sklearn.model_selection import train_test_split
 import sklearn.metrics as metric
 from sklearn.preprocessing import StandardScaler
 import sys
+import scipy.stats as st
 
 #print(__doc__)
 
 """
 Defining different functions to be used
 """
+
+def CI_normal(alpha,mean,var):#C.I for known variance and normal distribution
+    sigma = np.sqrt(var)
+    Z = st.norm.ppf(1-alpha/2)
+    l = mean - Z*sigma
+    u = mean + Z*sigma
+    return l,u
 
 def R2(y,ytilde):
     """
