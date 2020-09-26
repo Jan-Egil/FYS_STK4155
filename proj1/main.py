@@ -44,20 +44,16 @@ if exercise == "a":
 
     X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
 
-    """
-    Need to understand how scaling works(!!!!)
-    """
-
     scaler = StandardScaler()
     scaler.fit(X_train)
-    X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    X_train_scaled = scaler.transform(X_train); X_train_scaled[:,0] = 1
+    X_test_scaled = scaler.transform(X_test); X_train_scaled[:,0] = 1
 
 
-    beta = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ z_train
+    beta = np.linalg.pinv(X_train_scaled) @ z_train
 
-    z_tilde_train = X_train @ beta
-    z_tilde_test = X_test @ beta
+    z_tilde_train = X_train_scaled @ beta
+    z_tilde_test = X_test_scaled @ beta
 
     MSE_train_scikit = metric.mean_squared_error(z_train,z_tilde_train)
     R2_train_scikit = metric.r2_score(z_train,z_tilde_train)
@@ -71,11 +67,18 @@ if exercise == "a":
     MSE_test = MSE(z_test,z_tilde_test)
     R2_test = R2(z_test,z_tilde_test)
 
-    print(R2_train_scikit)
-    print(R2_train)
+    print("\n-------------------------R2-Score-----------------------------------\n")
+    print("The R2 score for the training data is %e using SKLearn" % R2_train_scikit)
+    print("The R2 score for the training data is %e using own defined function" % R2_train)
     print(" ")
-    print(R2_test_scikit)
-    print(R2_test)
+    print("The R2 score for the test data is %e using SKLearn" % R2_test_scikit)
+    print("The R2 score for the test data is %e using own defined function" % R2_test)
+    print("\n-------------------------MSE-Score----------------------------------\n")
+    print("The MSE score for the training data is %e using SKLearn" % MSE_train_scikit)
+    print("The MSE score for the training data is %e using own defined function" % MSE_train)
+    print(" ")
+    print("The MSE score for the test data is %e using SKLearn" % MSE_test_scikit)
+    print("The MSE score for the test data is %e using own defined function" % MSE_test)
 
 
 """
@@ -84,8 +87,8 @@ Part b)
 
 if exercise == "b":
     MaxPoly = 20
-    N = 100
-    noise = 0.2
+    N = 200
+    noise = 0.3
     testsize = 0.2
 
     xy = np.random.rand(N,2)
@@ -99,18 +102,15 @@ if exercise == "b":
         X = DesignMatrixCreator_2dpol(polydeg,x,y)
         X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
 
-        """
-        Insert scaling here
-        """
         scaler = StandardScaler()
         scaler.fit(X_train)
-        X_train_scaled = scaler.transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
+        X_train_scaled = scaler.transform(X_train);X_train_scaled[:,0] = 1
+        X_test_scaled = scaler.transform(X_test);X_test_scaled[:,0] = 1
 
-        beta_optimal = np.linalg.pinv(X_train) @ z_train
+        beta_optimal = np.linalg.pinv(X_train_scaled) @ z_train
 
-        z_tilde_train = X_train @ beta_optimal
-        z_tilde_test = X_test @ beta_optimal
+        z_tilde_train = X_train_scaled @ beta_optimal
+        z_tilde_test = X_test_scaled @ beta_optimal
 
         MSE_train = MSE(z_train,z_tilde_train)
         MSE_test = MSE(z_test,z_tilde_test)
@@ -126,3 +126,9 @@ if exercise == "b":
     plt.title("N = %i, test size = %.1f%%, noise = %.2f"% (N,testsize*100,noise),fontsize="x-large")
     plt.legend(); plt.grid(); plt.semilogy()
     plt.show()
+
+"""
+part c)
+"""
+if exercise == "c":
+    print("You've come a long way to start with this exercise, haven't you..?")

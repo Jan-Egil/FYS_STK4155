@@ -7,12 +7,46 @@ from sklearn.preprocessing import StandardScaler
 import sys
 import scipy.stats as st
 
-def CI_normal(alpha,mean,var):#C.I for known variance and normal distribution
+def CI_normal(mean,var,alpha=0.95):
+    """
+    Calculates the confidence interval for a normally distributed set of values.
+
+    Input:
+    mean: Mean value of normal distribution
+    var: Variance of normal distribution
+    alpha: (Explain) + (Set to (BLANK))
+
+    Output:
+    l: lower confidence boundary
+    u: upper confidence boundary
+    """
+
     sigma = np.sqrt(var)
     Z = st.norm.ppf(1-alpha/2)
     l = mean - Z*sigma
     u = mean + Z*sigma
     return l,u
+
+
+def bias(fi,exp_ytilde):
+    """
+    Calculates the bias-value assosciated with the mean squared error
+
+    Input:
+    fi: Actual function value at given points. (Eventually data points)
+    exp_ytilde: Expectation values of the
+
+    Output:
+    Bias: Calculated Bias
+    """
+
+    sum = 0
+    n = len(fi)
+    for i in range(n):
+        sum += (f[i]-exp_ytilde)**2
+    bias = sum/n
+    return bias
+
 
 def R2(y,ytilde):
     """
@@ -42,6 +76,7 @@ def R2(y,ytilde):
     R2_score = 1 - (sum_above/sum_below)
     return R2_score
 
+
 def MSE(y,ytilde):
     """
     Takes an array of data points and corresponding predicted values. Calculates the mean squared error
@@ -61,6 +96,7 @@ def MSE(y,ytilde):
         sum += (y[i]-ytilde[i])**2
     Mean_Squared_Error = sum/n
     return Mean_Squared_Error
+
 
 def ME(y,ytilde):
     """
@@ -82,6 +118,7 @@ def ME(y,ytilde):
     Mean_Error = sum/n
     return Mean_Error
 
+
 def frankefunc_analytic(x,y):
     """
     Just your regular Franke function
@@ -101,6 +138,7 @@ def frankefunc_analytic(x,y):
     term3 = 0.5*np.exp(-((9*x-7)**2)/4 - ((9*y-3)**2)/4)
     term4 = 0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 - term4
+
 
 def frankefunc_noise(x,y,noise):
     """
@@ -122,6 +160,7 @@ def frankefunc_noise(x,y,noise):
     term3 = 0.5*np.exp(-((9*x-7)**2)/4 - ((9*y-3)**2)/4)
     term4 = 0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 - term4 + noise*np.random.randn(N)
+
 
 def DesignMatrixCreator_2dpol(p,x,y):
     """
