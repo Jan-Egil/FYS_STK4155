@@ -31,7 +31,7 @@ def CI_normal(mean,var,alpha=0.95):
 
 def bias(fi,exp_ytilde):
     """
-    Calculates the bias-value assosciated with the mean squared error
+    Calculates the bias-value assosciated with the mean squared error (NOTE: Returns Bias^2)
 
     INPUT:
     fi: Actual function value at given points. (Eventually data points)
@@ -44,7 +44,7 @@ def bias(fi,exp_ytilde):
     sum = 0
     n = len(fi)
     for i in range(n):
-        sum += (f[i]-exp_ytilde)**2
+        sum += (fi[i]-exp_ytilde)**2
     bias = sum/n
     return bias
 
@@ -194,24 +194,31 @@ def DesignMatrixCreator_2dpol(p,x,y):
             column += 1
     return X
 
-def bootstrap(X_train,X_test,y_train,n):
+def bootstrap(X_train,X_test,y_train,y_test,n):
     """
     Does the bootstrap resampling technique, and returns predicted values for test and train data.
 
     INPUT:
-    X_train:
-    X_test:
-    y_train:
+    X_train: Design matrix corresponding to training values
+    X_test: Design matrix corresponding to test values
+    y_train: Function values at points corresponding to train values for the design matrix
+    y_test: Function values at points corresponding to test values for the design matrix
     n: Number of bootstrap iterations
 
     OUTPUT:
     ytilde_train: Matrix with rows corresponding to predicted values for training data.
-    ytilde_test:
+    ytilde_test: Matrix with rows corresponding to predicted values for test data
     """
-    ytilde = np.zeros(y_train.shape[0],n)
+
+    ytilde_train = np.zeros([y_train.shape[0],n])
+    ytilde_test = np.zeros([y_test.shape[0],n])
+
     for i in range(n):
         x,y = resample(X_train,y_train) #Defaults at bootstrap resampling
-        beta = np.linalg.pinv(x) @ y
+
+
+        beta = np.linalg.pinv(x.T @ x) @ x.T @ y
         ytilde_train[:,i] = X_train @ beta
         ytilde_test[:,i] = X_test @ beta
+
     return ytilde_train,ytilde_test

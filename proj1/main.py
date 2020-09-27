@@ -7,14 +7,6 @@ This is just printed to terminal when the program is run.
 What we will choose to write here when the project is finished is beyond me at the moment.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
-from sklearn.model_selection import train_test_split
-import sklearn.metrics as metric
-from sklearn.preprocessing import StandardScaler
-import sys
-import scipy.stats as st
 from func import * #Really nasty syntax
 
 #print(__doc__)
@@ -85,7 +77,7 @@ Part b)
 """
 
 if exercise == "b":
-    print("type 'a' for complexity vs error plot, type 'b' for bootstrap bias-variance analysis.")
+    print("\ntype 'a' for complexity vs error plot, type 'b' for bootstrap bias-variance analysis.")
     specifics = input("Type here: ")
     if specifics == "a":
         MaxPoly = 20
@@ -128,8 +120,51 @@ if exercise == "b":
         plt.title("N = %i, test size = %.1f%%, noise = %.2f"% (N,testsize*100,noise),fontsize="x-large")
         plt.legend(); plt.grid(); plt.semilogy()
         plt.show()
+
     elif specifics == "b":
-        pass
+        print("\nHow many bootstrap runs do you wish to do?")
+        n = int(input("Type here: "))
+        MaxPoly = 15
+        N = 50
+        noise = 0.3
+        testsize = 0.2
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+        fi = frankefunc_analytic(x,y) #Analytic function values at said points
+
+        MSE_test_array = np.zeros(MaxPoly)
+
+        bias_test_array = np.zeros(MaxPoly)
+        variance_test_array = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+
+            scaler = StandardScaler()
+            scaler.fit(X_train)
+            X_train_scaled = scaler.transform(X_train); X_train_scaled[:,0] = 1
+            X_test_scaled = scaler.transform(X_test); X_test_scaled[:,0] = 1
+
+            ztilde_train, ztilde_test = bootstrap(X_train_scaled,X_test_scaled,z_train,z_test,n)
+
+            MSE_test_array[polydeg-1] = np.mean(MSE(z_test,ztilde_test))
+            bias_test_array[polydeg-1] = np.mean(bias(fi,np.mean(ztilde_test)))
+            variance_test_array[polydeg-1] = np.mean(np.var(ztilde_test))
+
+        polydeg_array = np.arange(1,MaxPoly+1)
+        plt.plot(polydeg_array,bias_test_array,label="Bias")
+        plt.plot(polydeg_array,variance_test_array,label="Variance")
+        plt.plot(polydeg_array,MSE_test_array,label="MSE")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
+
+
+
+
+
 
 """
 Part c)
@@ -137,3 +172,31 @@ Part c)
 
 if exercise == "c":
     print("You've come a long way to start with this exercise, haven't you..?")
+
+"""
+Part d)
+"""
+
+if exercise == "d":
+    print("Why are you even here?")
+
+"""
+Part e)
+"""
+
+if exercise == "e":
+    print("Just stop scrolling pls")
+
+"""
+Part f)
+"""
+
+if exercise == "f":
+    print("Almost at the bottom now")
+
+"""
+Part g)
+"""
+
+if exercise == "g":
+    print("Welcome to the bottom.")
