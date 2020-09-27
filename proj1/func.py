@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import sklearn.metrics as metric
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import resample
 import sys
 import scipy.stats as st
 
@@ -11,12 +12,12 @@ def CI_normal(mean,var,alpha=0.95):
     """
     Calculates the confidence interval for a normally distributed set of values.
 
-    Input:
+    INPUT:
     mean: Mean value of normal distribution
     var: Variance of normal distribution
     alpha: (Explain) + (Set to (BLANK))
 
-    Output:
+    OUTPUT:
     l: lower confidence boundary
     u: upper confidence boundary
     """
@@ -32,11 +33,11 @@ def bias(fi,exp_ytilde):
     """
     Calculates the bias-value assosciated with the mean squared error
 
-    Input:
+    INPUT:
     fi: Actual function value at given points. (Eventually data points)
     exp_ytilde: Expectation values of the
 
-    Output:
+    OUTPUT:
     Bias: Calculated Bias
     """
 
@@ -52,11 +53,11 @@ def R2(y,ytilde):
     """
     Takes an array of data points and corresponding predicted values. Calculates the R2 score
 
-    Input:
+    INPUT:
     y: Array of actual datapoints
     ytilde: Array of preducted datapoints
 
-    Output:
+    OUTPUT:
     R2_score: Self explanatory
     """
     if len(y) != len(ytilde):
@@ -81,11 +82,11 @@ def MSE(y,ytilde):
     """
     Takes an array of data points and corresponding predicted values. Calculates the mean squared error
 
-    Input:
+    INPUT:
     y: Array of actual datapoints
     ytilde: Array of predicted datapoints
 
-    Output:
+    OUTPUT:
     Mean_Squared_Error: self-explanatory
     """
     if len(y) != len(ytilde):
@@ -102,11 +103,11 @@ def ME(y,ytilde):
     """
     Takes an array of data points and corresponding predicted values. Calculates the mean (absolute) error
 
-    Input:
+    INPUT:
     y: Array of actual datapoints
     ytilde: Array of predicted datapoints
 
-    Output:
+    OUTPUT:
     Mean_Error: self-explanatory
     """
     if len(y) != len(ytilde):
@@ -121,12 +122,12 @@ def ME(y,ytilde):
 
 def frankefunc_analytic(x,y):
     """
-    Just your regular Franke function
+    The Franke function evaluated at a given point (x,y)
 
-    Input:
+    INPUT:
     x,y: position (x,y)
 
-    Output:
+    OUTPUT:
     Franke Function value at position (x,y)
     """
 
@@ -142,13 +143,13 @@ def frankefunc_analytic(x,y):
 
 def frankefunc_noise(x,y,noise):
     """
-    FrankeFunc
+    The Franke function evaluated at a given point (x,y) including noise.
 
-    Input:
+    INPUT:
     x,y: position (x,y)
     noise: Factor of noise
 
-    Output:
+    OUTPUT:
     Franke Function value at position (x,y) with added noise
     """
     if len(x) != len(y):
@@ -166,11 +167,11 @@ def DesignMatrixCreator_2dpol(p,x,y):
     """
     Creates a design matrix for 2 variable polynomial (x,y)
 
-    Input:
+    INPUT:
     p: Degree of polynomial
     x, y: Array of x-values & y-values
 
-    Output:
+    OUTPUT:
     X: Design matrix
     """
 
@@ -192,3 +193,25 @@ def DesignMatrixCreator_2dpol(p,x,y):
             X[:,column] = (x**j)*(y**(i-j))
             column += 1
     return X
+
+def bootstrap(X_train,X_test,y_train,n):
+    """
+    Does the bootstrap resampling technique, and returns predicted values for test and train data.
+
+    INPUT:
+    X_train:
+    X_test:
+    y_train:
+    n: Number of bootstrap iterations
+
+    OUTPUT:
+    ytilde_train: Matrix with rows corresponding to predicted values for training data.
+    ytilde_test:
+    """
+    ytilde = np.zeros(y_train.shape[0],n)
+    for i in range(n):
+        x,y = resample(X_train,y_train) #Defaults at bootstrap resampling
+        beta = np.linalg.pinv(x) @ y
+        ytilde_train[:,i] = X_train @ beta
+        ytilde_test[:,i] = X_test @ beta
+    return ytilde_train,ytilde_test
