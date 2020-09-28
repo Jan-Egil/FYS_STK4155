@@ -59,6 +59,13 @@ if exercise == "a":
     MSE_test = MSE(z_test,z_tilde_test)
     R2_test = R2(z_test,z_tilde_test)
 
+    """Confidence interval"""
+    var_Z = variance_estimator(p,z_train,z_tilde_train)
+    var_beta = np.linalg.pinv(X_train_scaled.T @ X_train_scaled)*var_Z
+    mean_beta = np.mean(beta)
+
+    CI_beta_L,CI_beta_U = CI_normal(mean_beta, var_beta, 0.05)
+
     print("\n-------------------------R2-Score-----------------------------------\n")
     print("The R2 score for the training data is %e using SKLearn" % R2_train_scikit)
     print("The R2 score for the training data is %e using own defined function" % R2_train)

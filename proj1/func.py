@@ -8,14 +8,14 @@ from sklearn.utils import resample
 import sys
 import scipy.stats as st
 
-def CI_normal(mean,var,alpha=0.95):
+def CI_normal(mean,var,alpha):
     """
     Calculates the confidence interval for a normally distributed set of values.
 
     INPUT:
     mean: Mean value of normal distribution
     var: Variance of normal distribution
-    alpha: (Explain) + (Set to (BLANK))
+    alpha: significance level (confidence level = 1 - alpha)
 
     OUTPUT:
     l: lower confidence boundary
@@ -27,6 +27,24 @@ def CI_normal(mean,var,alpha=0.95):
     l = mean - Z*sigma
     u = mean + Z*sigma
     return l,u
+
+def variance_estimator(p,y,ytilde):
+    """
+    Estimation of unkown variance
+
+    Input:
+    p: polynomial degree
+    y: Array of actual datapoints
+    ytilde: Array of predicted datapoints
+
+    Returns:
+    Estimated variance
+    """
+    if len(y) != len(ytilde):
+        sys.exit(0)
+    N = len(y)
+    var_hat = 1/(N-p-1)*np.sum(y-ytilde)#estimate variance of z
+    return var_hat
 
 
 def bias(fi,exp_ytilde):
@@ -55,7 +73,7 @@ def R2(y,ytilde):
 
     INPUT:
     y: Array of actual datapoints
-    ytilde: Array of preducted datapoints
+    ytilde: Array of predicted datapoints
 
     OUTPUT:
     R2_score: Self explanatory
