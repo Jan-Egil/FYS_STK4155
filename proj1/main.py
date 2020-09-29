@@ -24,14 +24,14 @@ Part a)
 
 if exercise == "a":
     N = 1000
-    p = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
+    polydeg = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
     noise = 0.1 #Factor of noise in data
 
     xy = np.random.rand(N,2)
     x = xy[:,0]; y = xy[:,1]
 
 
-    X = DesignMatrixCreator_2dpol(p,x,y)
+    X = DesignMatrixCreator_2dpol(polydeg,x,y)
     z = frankefunc_noise(x,y,noise)
 
     z_tilde_test, z_tilde_train, z_test, z_train, X_test_scaled, X_train_scaled, beta = OLS(X,z)
@@ -49,10 +49,10 @@ if exercise == "a":
     R2_test = R2(z_test,z_tilde_test)
 
     """Confidence interval"""
-    var_Z = variance_estimator(p,z_train,z_tilde_train)
+    var_Z = variance_estimator(polydeg,z_train,z_tilde_train)
     var_beta = np.linalg.pinv(X_train_scaled.T @ X_train_scaled)*var_Z
     mean_beta = np.mean(beta)
-    print(var_Z)
+    
     CI_beta_L,CI_beta_U = CI_normal(mean_beta, var_beta, 0.05)
 
     print("\n-------------------------R2-Score-----------------------------------\n")
@@ -203,6 +203,7 @@ if exercise == "f":
     print("However: we will gladly plot the selected image file for y'all!")
 
     terrainvar = imread('n59_e010_1arc_v3.tif')
+
     plt.figure()
     plt.title("Terrain over the Oslo fjord region",fontsize="x-large")
     plt.imshow(terrainvar,cmap='gray')
@@ -215,4 +216,28 @@ Part g)
 """
 
 if exercise == "g":
-    print("Welcome to the bottom.")
+    print("\nWelcome to the bottom.\n")
+    terrainvar = imread('n59_e010_1arc_v3.tif')
+
+    N = 1000
+    x = np.random.randint(0,terrainvar.shape[1],size=N)
+    y = np.random.randint(0,terrainvar.shape[0],size=N)
+
+    TrainingData = terrainvar[y,x]
+    print(TrainingData)
+
+    print("\nDo you want to perform OLS, Ridge, or Lasso regression analysis?")
+    print("Type 'a' for OLS, 'b' for Ridge or 'c' for Lasso:\n")
+    choice = input("Type here: ")
+
+    if choice == 'a':
+        #OLS
+        pass
+    elif choice == 'b':
+        #Ridge
+        pass
+    elif choice == 'c':
+        #Lasse
+        pass
+    else:
+        print("\nLol you can't even follow simple instructions")

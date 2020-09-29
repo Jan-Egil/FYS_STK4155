@@ -47,7 +47,9 @@ def variance_estimator(p,y,ytilde):
     """
     if len(y) != len(ytilde):
         sys.exit(0)
+
     N = len(y)
+
     var_hat = 1/(N-p-1)*np.sum((y-ytilde)**2)#estimate variance of z
     return var_hat
 
@@ -341,6 +343,8 @@ def cross_validation(X_train,y_train,K):
 
 if __name__ == '__main__':
     """
-    idk
+    Felt like adding a name-main section just in case
     """
-    pass
+    
+    print("\nYou successfully decided to run the function file instead of the actual file..\n")
+    print("Nice going.")
