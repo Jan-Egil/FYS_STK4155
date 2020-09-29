@@ -43,7 +43,7 @@ def variance_estimator(p,y,ytilde):
     if len(y) != len(ytilde):
         sys.exit(0)
     N = len(y)
-    var_hat = 1/(N-p-1)*np.sum(y-ytilde)#estimate variance of z
+    var_hat = 1/(N-p-1)*np.sum((y-ytilde)**2)#estimate variance of z
     return var_hat
 
 

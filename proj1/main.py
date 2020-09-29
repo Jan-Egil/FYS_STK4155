@@ -66,7 +66,7 @@ if exercise == "a":
     var_Z = variance_estimator(p,z_train,z_tilde_train)
     var_beta = np.linalg.pinv(X_train_scaled.T @ X_train_scaled)*var_Z
     mean_beta = np.mean(beta)
-
+    print(var_Z)
     CI_beta_L,CI_beta_U = CI_normal(mean_beta, var_beta, 0.05)
 
     print("\n-------------------------R2-Score-----------------------------------\n")
