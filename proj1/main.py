@@ -34,6 +34,7 @@ if exercise == "a":
     X = DesignMatrixCreator_2dpol(p,x,y)
     z = frankefunc_noise(x,y,noise)
 
+    """
     X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
 
     scaler = StandardScaler()
@@ -46,6 +47,8 @@ if exercise == "a":
 
     z_tilde_train = X_train_scaled @ beta
     z_tilde_test = X_test_scaled @ beta
+    """
+    z_tilde_test, z_tilde_train, z_test, z_train, X_test_scaled, X_train_scaled, beta = OLS(X,z)
 
     MSE_train_scikit = metric.mean_squared_error(z_train,z_tilde_train)
     R2_train_scikit = metric.r2_score(z_train,z_tilde_train)
@@ -101,17 +104,8 @@ if exercise == "b":
 
         for polydeg in range(1,MaxPoly+1):
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
-            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
 
-            scaler = StandardScaler()
-            scaler.fit(X_train)
-            X_train_scaled = scaler.transform(X_train);X_train_scaled[:,0] = 1
-            X_test_scaled = scaler.transform(X_test);X_test_scaled[:,0] = 1
-
-            beta_optimal = np.linalg.pinv(X_train_scaled.T @ X_train_scaled) @ X_train_scaled.T @ z_train
-
-            z_tilde_train = X_train_scaled @ beta_optimal
-            z_tilde_test = X_test_scaled @ beta_optimal
+            z_tilde_test, z_tilde_train, z_test, z_train, beta_optimal = OLS(X,z)
 
             MSE_train = MSE(z_train,z_tilde_train)
             MSE_test = MSE(z_test,z_tilde_test)

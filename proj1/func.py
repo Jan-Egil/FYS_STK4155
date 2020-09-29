@@ -240,3 +240,47 @@ def bootstrap(X_train,X_test,y_train,y_test,n):
         ytilde_test[:,i] = X_test @ beta
 
     return ytilde_train,ytilde_test
+
+def OLS(X,y,testsize=0.2):
+    """
+    Description
+
+    INPUT:
+    X: The design matrix of the problem
+    y: The data point sets corresponding to the respective points in the design matrix
+    Testsize: The amount of the full data set should be set aside for testing
+
+    OUTPUT:
+    ytildeTest: Approximated values corresponding to the test data
+    ytildeTrain: Approximated values corresponding to the train data
+    yTest: The "true" data values of the test data
+    yTrain: The "true" data values of the train data
+    Beta_OLS_optimal: The optimal coefficient values for the best-fit polynomial
+    """
+
+    XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=testsize)
+    scaler = StandardScaler()
+    scaler.fit(XTrain)
+    XTrainScaled = scaler.transform(XTrain); XTrainScaled[:,0] = 1
+    XTestScaled = scaler.transform(XTest); XTestScaled[:,0] = 1
+
+    Beta_OLS_optimal = np.linalg.pinv(XTrainScaled.T @ XTrainScaled) @ XTrainScaled.T @ yTrain
+
+    ytildeTrain = XTrainScaled @ Beta_OLS_optimal
+    ytildeTest = XTestScaled @ Beta_OLS_optimal
+
+    return ytildeTest, ytildeTrain, yTest, yTrain, XTestScaled, XTrainScaled, Beta_OLS_optimal
+
+def cross_validation(X_train,y_train,K):
+    """
+    Description
+
+    INPUT:
+    K: the amount of folds we will cross-validate
+
+    OUTPUT:
+    idk
+    """
+
+
+    pass
