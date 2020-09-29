@@ -34,20 +34,6 @@ if exercise == "a":
     X = DesignMatrixCreator_2dpol(p,x,y)
     z = frankefunc_noise(x,y,noise)
 
-    """
-    X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
-
-    scaler = StandardScaler()
-    scaler.fit(X_train)
-    X_train_scaled = scaler.transform(X_train); X_train_scaled[:,0] = 1
-    X_test_scaled = scaler.transform(X_test); X_train_scaled[:,0] = 1
-
-
-    beta = np.linalg.pinv(X_train_scaled.T @ X_train_scaled) @ X_train_scaled.T @ z_train
-
-    z_tilde_train = X_train_scaled @ beta
-    z_tilde_test = X_test_scaled @ beta
-    """
     z_tilde_test, z_tilde_train, z_test, z_train, X_test_scaled, X_train_scaled, beta = OLS(X,z)
 
     MSE_train_scikit = metric.mean_squared_error(z_train,z_tilde_train)
@@ -179,7 +165,26 @@ Part d)
 """
 
 if exercise == "d":
-    print("Why are you even here?")
+    PolyDeg = 10
+    N = 300
+    noise = 0.3
+
+    xy = np.random.rand(N,2)
+    x = xy[:,0]; y = xy[:,1]
+    z = frankefunc_noise(x,y,noise)
+    X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
+
+    lambdavals = np.logspace(-3,5,200)
+
+    z_tilde_test,z_tilde_train,z_test,z_train,X_test_scaled,X_train_scaled,BetaRidge,OptLamb,MSE_lamb = Ridge(X,z,lambdavals)
+
+    plt.plot(lambdavals,MSE_lamb)
+    plt.axvline(OptLamb)
+    plt.semilogy();plt.semilogx()
+    plt.grid()
+    plt.xlabel("Value for hyperparameter $\lambda$",fontsize="x-large")
+    plt.ylabel("Mean Squared Error (MSE)",fontsize="x-large")
+    plt.show()
 
 """
 Part e)
@@ -193,7 +198,17 @@ Part f)
 """
 
 if exercise == "f":
-    print("Almost at the bottom now")
+    print("\nExercise f doesn't really exist\n")
+    print("It is only a placeholder for the download of data for the next exercise\n")
+    print("However: we will gladly plot the selected image file for y'all!")
+
+    terrainvar = imread('n59_e010_1arc_v3.tif')
+    plt.figure()
+    plt.title("Terrain over the Oslo fjord region",fontsize="x-large")
+    plt.imshow(terrainvar,cmap='gray')
+    plt.xlabel("<-- West - East -->",fontsize="large")
+    plt.ylabel("<-- South - North -->",fontsize="large")
+    plt.show()
 
 """
 Part g)

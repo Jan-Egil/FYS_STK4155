@@ -1,12 +1,17 @@
 import numpy as np
+from imageio import imread
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 import pandas as pd
+import sys
+import scipy.stats as st
+
 from sklearn.model_selection import train_test_split
 import sklearn.metrics as metric
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
-import sys
-import scipy.stats as st
+
 
 def CI_normal(mean,var,alpha):
     """
@@ -243,7 +248,7 @@ def bootstrap(X_train,X_test,y_train,y_test,n):
 
 def OLS(X,y,testsize=0.2):
     """
-    Description
+    Performs an Ordinary Least Squares (OLS) regression on a data set
 
     INPUT:
     X: The design matrix of the problem
@@ -255,7 +260,9 @@ def OLS(X,y,testsize=0.2):
     ytildeTrain: Approximated values corresponding to the train data
     yTest: The "true" data values of the test data
     yTrain: The "true" data values of the train data
-    Beta_OLS_optimal: The optimal coefficient values for the best-fit polynomial
+    XTestScaled: The scaled design matrix corresponding to the test values
+    XTrainScaled: The scaled design matrix corresponding to the train values
+    Beta_OLS_optimal: The optimal coefficient values for the best-fit polynomial in OLS
     """
 
     XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=testsize)
@@ -271,6 +278,53 @@ def OLS(X,y,testsize=0.2):
 
     return ytildeTest, ytildeTrain, yTest, yTrain, XTestScaled, XTrainScaled, Beta_OLS_optimal
 
+def Ridge(X,y,lamb,testsize=0.2):
+    """
+    Performs Ridge regression on a data set and finds the optimal hyperparameter
+
+    INPUT:
+    X: The design matrix of the problem
+    y the data point sets corresponding to the respective points in the design matrix
+    lamb: an array of potential lambda values we are optimizing for
+    Testsize: (Optional) The amount of the full data set should be set aside for testing
+
+    OUTPUT:
+    ytildeTest: Approximated values corresponding to the test data
+    ytildeTrain: Approximated values corresponding to the train data
+    yTest: The "true" data values of the test data
+    yTrain: The "true" data values of the train data
+    XTestScaled: The scaled design matrix corresponding to the test values
+    XTrainScaled: The scaled design matrix corresponding to the train values
+    Beta_Ridge_Optimal: The optimal coefficient values for the best-fit polynomial using Ridge
+    optimalLambda: The optimal value for lambda (where the MSE value is the lowest)
+    MSE_lamb: An array with the same length as lambda, contains
+    """
+
+    XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=testsize)
+    scaler = StandardScaler()
+    scaler.fit(XTrain)
+    XTrainScaled = scaler.transform(XTrain); XTrainScaled[:,0] = 1
+    XTestScaled = scaler.transform(XTest); XTestScaled[:,0] = 1
+
+    Beta_Ridge = np.zeros((len(lamb),X.shape[1])); MSE_lamb = np.zeros(len(lamb))
+    XTraining, XValidate, yTraining, yValidate = train_test_split(XTrainScaled,yTrain,test_size=testsize)
+
+    for i,lambval in enumerate(lamb):
+        Beta_Ridge[i,:] = np.linalg.pinv(XTraining.T @ XTraining + lambval * np.identity((XTraining.T @ XTraining).shape[0])) @ XTraining.T @ yTraining
+
+        ytildeValidate = XValidate @ Beta_Ridge[i]
+
+        MSE_lamb[i] = MSE(yValidate,ytildeValidate)
+
+    optimalLambda = lamb[np.argmin(MSE_lamb)]
+    Beta_Ridge_Optimal = Beta_Ridge[np.argmin(MSE_lamb)]
+
+    ytildeTrain = XTrainScaled @ Beta_Ridge_Optimal
+    ytildeTest = XTestScaled @ Beta_Ridge_Optimal
+
+    return ytildeTest, ytildeTrain, yTest, yTrain, XTestScaled, XTrainScaled, Beta_Ridge_Optimal, optimalLambda, MSE_lamb
+
+
 def cross_validation(X_train,y_train,K):
     """
     Description
@@ -283,4 +337,10 @@ def cross_validation(X_train,y_train,K):
     """
 
 
+    pass
+
+if __name__ == '__main__':
+    """
+    idk
+    """
     pass
