@@ -34,23 +34,26 @@ if exercise == "a":
     X = DesignMatrixCreator_2dpol(polydeg,x,y)
     z = frankefunc_noise(x,y,noise)
 
-    z_tilde_test, z_tilde_train, z_test, z_train, X_test_scaled, X_train_scaled, beta = OLS(X,z)
+    X_train, X_test, zTrain, zTest = train_test_split(X,z,test_size=0.2)
+    X_train, X_test = scale(X_train, X_test)
 
-    MSE_train_scikit = metric.mean_squared_error(z_train,z_tilde_train)
-    R2_train_scikit = metric.r2_score(z_train,z_tilde_train)
+    z_tilde_test, z_tilde_train, beta = OLS(X_train, X_test, zTrain, zTest)
 
-    MSE_test_scikit = metric.mean_squared_error(z_test,z_tilde_test)
-    R2_test_scikit = metric.r2_score(z_test,z_tilde_test)
+    MSE_train_scikit = metric.mean_squared_error(zTrain, z_tilde_train)
+    R2_train_scikit = metric.r2_score(zTrain,z_tilde_train)
 
-    MSE_train = MSE(z_train,z_tilde_train)
-    R2_train = R2(z_train,z_tilde_train)
+    MSE_test_scikit = metric.mean_squared_error(zTest,z_tilde_test)
+    R2_test_scikit = metric.r2_score(zTest,z_tilde_test)
 
-    MSE_test = MSE(z_test,z_tilde_test)
-    R2_test = R2(z_test,z_tilde_test)
+    MSE_train = MSE(zTrain,z_tilde_train)
+    R2_train = R2(zTrain,z_tilde_train)
+
+    MSE_test = MSE(zTest,z_tilde_test)
+    R2_test = R2(zTest,z_tilde_test)
 
     """Confidence interval"""
-    var_Z = variance_estimator(polydeg,z_train,z_tilde_train)
-    var_beta = np.diag(np.linalg.pinv(X_train_scaled.T @ X_train_scaled))*var_Z
+    var_Z = variance_estimator(polydeg,zTrain,z_tilde_train)
+    var_beta = np.diag(np.linalg.pinv(X_train.T @ X_train))*var_Z
     mean_beta = np.mean(beta)
 
     CI_beta_L,CI_beta_U = CI_normal(beta, var_beta, 0.05)
@@ -94,8 +97,10 @@ if exercise == "b":
 
         for polydeg in range(1,MaxPoly+1):
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+            X_train, X_test = scale(X_train, X_test)
 
-            z_tilde_test, z_tilde_train, z_test, z_train, beta_optimal = OLS(X,z)
+            z_tilde_test, z_tilde_train, beta_optimal = OLS(X_train, X_test, z_train, z_test)
 
             MSE_train = MSE(z_train,z_tilde_train)
             MSE_test = MSE(z_test,z_tilde_test)
@@ -115,47 +120,35 @@ if exercise == "b":
     elif specifics == "b":
         print("\nHow many bootstrap runs do you wish to do?")
         n = int(input("Type here: "))
-        MaxPoly = 15
-        N = 50
+        MaxPoly = 20
+        N = 200
         noise = 0.3
         testsize = 0.2
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
         z = frankefunc_noise(x,y,noise)
-        fi = frankefunc_analytic(x,y) #Analytic function values at said points
 
-        MSE_test_array = np.zeros(MaxPoly)
+        MSE_a = np.zeros(MaxPoly)
 
-        bias_test_array = np.zeros(MaxPoly)
-        variance_test_array = np.zeros(MaxPoly)
+        bias_a = np.zeros(MaxPoly)
+        var_a = np.zeros(MaxPoly)
 
+        i = 0
         for polydeg in range(1,MaxPoly+1):
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
+
             X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+            X_train, X_test = scale(X_train, X_test)
 
-            scaler = StandardScaler()
-            scaler.fit(X_train)
-            X_train_scaled = scaler.transform(X_train); X_train_scaled[:,0] = 1
-            X_test_scaled = scaler.transform(X_test); X_test_scaled[:,0] = 1
-
-            ztilde_train, ztilde_test = bootstrap(X_train_scaled,X_test_scaled,z_train,z_test,n)
-
-            MSE_test_array[polydeg-1] = np.mean(MSE(z_test,ztilde_test))
-            bias_test_array[polydeg-1] = np.mean(bias(fi,np.mean(ztilde_test)))
-            variance_test_array[polydeg-1] = np.mean(np.var(ztilde_test))
+            MSE_a[i], bias_a[i], var_a[i] = Func_Bootstrap(X_train, X_test, z_train, z_test, n)
 
         polydeg_array = np.arange(1,MaxPoly+1)
-        plt.plot(polydeg_array,bias_test_array,label="Bias")
-        plt.plot(polydeg_array,variance_test_array,label="Variance")
-        plt.plot(polydeg_array,MSE_test_array,label="MSE")
+        plt.plot(polydeg_array,bias_a,label="Bias")
+        plt.plot(polydeg_array,var_a,label="Variance")
+        plt.plot(polydeg_array,MSE_a,label="MSE")
         plt.grid(); plt.legend(); plt.semilogy()
         plt.show()
-
-
-
-
-
 
 """
 Part c)

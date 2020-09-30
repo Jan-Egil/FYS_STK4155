@@ -12,7 +12,6 @@ import sklearn.metrics as metric
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 
-
 def CI_normal(mean,var,alpha):
     """
     Calculates the confidence interval for a normally distributed set of values.
@@ -181,6 +180,10 @@ def frankefunc_noise(x,y,noise):
     if len(x) != len(y):
         sys.exit(0)
 
+    if len(x.shape) > 1:
+        x = np.ravel(x)
+        y = np.ravel(y)
+
     N = len(x)
     term1 = 0.75*np.exp(-((9*x-2)**2)/4 - ((9*x-2)**2)/4)
     term2 = 0.75*np.exp(-((9*x+1)**2)/49 - (9*y+1)/10)
@@ -220,36 +223,7 @@ def DesignMatrixCreator_2dpol(p,x,y):
             column += 1
     return X
 
-def bootstrap(X_train,X_test,y_train,y_test,n):
-    """
-    Does the bootstrap resampling technique, and returns predicted values for test and train data.
-
-    INPUT:
-    X_train: Design matrix corresponding to training values
-    X_test: Design matrix corresponding to test values
-    y_train: Function values at points corresponding to train values for the design matrix
-    y_test: Function values at points corresponding to test values for the design matrix
-    n: Number of bootstrap iterations
-
-    OUTPUT:
-    ytilde_train: Matrix with rows corresponding to predicted values for training data.
-    ytilde_test: Matrix with rows corresponding to predicted values for test data
-    """
-
-    ytilde_train = np.zeros([y_train.shape[0],n])
-    ytilde_test = np.zeros([y_test.shape[0],n])
-
-    for i in range(n):
-        x,y = resample(X_train,y_train) #Defaults at bootstrap resampling
-
-
-        beta = np.linalg.pinv(x.T @ x) @ x.T @ y
-        ytilde_train[:,i] = X_train @ beta
-        ytilde_test[:,i] = X_test @ beta
-
-    return ytilde_train,ytilde_test
-
-def OLS(X,y,testsize=0.2):
+def OLS(XTrain, XTest, yTrain, yTest):
     """
     Performs an Ordinary Least Squares (OLS) regression on a data set
 
@@ -268,18 +242,12 @@ def OLS(X,y,testsize=0.2):
     Beta_OLS_optimal: The optimal coefficient values for the best-fit polynomial in OLS
     """
 
-    XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=testsize)
-    scaler = StandardScaler()
-    scaler.fit(XTrain)
-    XTrainScaled = scaler.transform(XTrain); XTrainScaled[:,0] = 1
-    XTestScaled = scaler.transform(XTest); XTestScaled[:,0] = 1
+    Beta_OLS_optimal = np.linalg.pinv(XTrain.T @ XTrain) @ XTrain.T @ yTrain
 
-    Beta_OLS_optimal = np.linalg.pinv(XTrainScaled.T @ XTrainScaled) @ XTrainScaled.T @ yTrain
+    ytildeTrain = XTrain @ Beta_OLS_optimal
+    ytildeTest = XTest @ Beta_OLS_optimal
 
-    ytildeTrain = XTrainScaled @ Beta_OLS_optimal
-    ytildeTest = XTestScaled @ Beta_OLS_optimal
-
-    return ytildeTest, ytildeTrain, yTest, yTrain, XTestScaled, XTrainScaled, Beta_OLS_optimal
+    return ytildeTest, ytildeTrain, Beta_OLS_optimal
 
 def Ridge(X,y,lamb,testsize=0.2):
     """
@@ -327,17 +295,67 @@ def Ridge(X,y,lamb,testsize=0.2):
 
     return ytildeTest, ytildeTrain, yTest, yTrain, XTestScaled, XTrainScaled, Beta_Ridge_Optimal, optimalLambda, MSE_lamb
 
+def scale(xtrain, xtest):
 
-def cross_validation(X_train,y_train,K):
+    scaler = StandardScaler()
+    scaler.fit(xtrain)
+    xtrain_scaled = scaler.transform(xtrain); xtrain_scaled[:,0] = 1
+    xtest_scaled = scaler.transform(xtest); xtest_scaled[:,0] = 1
+
+    return xtrain_scaled, xtest_scaled
+
+def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
+    """
+    Does the bootstrap resampling technique, and returns predicted values for test and train data.
+
+    INPUT:
+    X_train: Design matrix corresponding to training values
+    X_test: Design matrix corresponding to test values
+    y_train: Function values at points corresponding to train values for the design matrix
+    y_test: Function values at points corresponding to test values for the design matrix
+    n: Number of bootstrap iterations
+
+    OUTPUT:
+    ytilde_train: Matrix with rows corresponding to predicted values for training data.
+    ytilde_test: Matrix with rows corresponding to predicted values for test data
+    """
+
+    ytilde_test = np.empty((y_test.shape[0], n))
+
+    for i in range(n):
+        rand_idx = np.random.randint(0,len(X_train),len(X_train))
+        X = X_train[rand_idx]
+        Y = y_train[rand_idx]
+        if method == 'OLS':
+            ytilde_test[:,i] = OLS(X, X_test, Y, y_test)[0]
+        elif method == 'Ridge':
+            pass
+        elif method == 'Lasso':
+            pass
+        else:
+            sys.exit(0)
+
+    y_test = y_test[:,np.newaxis]
+
+
+    mse = np.mean(np.mean((y_test-ytilde_test)**2, axis=1, keepdims=True))
+    Bias = np.mean((y_test-np.mean(ytilde_test, axis=1, keepdims=True))**2)
+    variance = np.mean(np.var(ytilde_test, axis=1, keepdims=True))
+
+    return mse, Bias, variance
+
+def cross_validation(X,y,K):
     """
     Description
 
     INPUT:
+    X: the Design Matrix
     K: the amount of folds we will cross-validate
 
     OUTPUT:
     idk
     """
+
 
 
     pass
