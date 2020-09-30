@@ -28,7 +28,8 @@ def CI_normal(mean,var,alpha):
     """
 
     sigma = np.sqrt(var)
-    Z = st.norm.ppf(1-alpha/2)
+
+    Z = st.t.ppf(1-alpha/2,var.shape[0]-1)
     l = mean - Z*sigma
     u = mean + Z*sigma
     return l,u
@@ -345,6 +346,6 @@ if __name__ == '__main__':
     """
     Felt like adding a name-main section just in case
     """
-    
+
     print("\nYou successfully decided to run the function file instead of the actual file..\n")
     print("Nice going.")

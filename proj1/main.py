@@ -25,7 +25,7 @@ Part a)
 if exercise == "a":
     N = 1000
     polydeg = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
-    noise = 0.1 #Factor of noise in data
+    noise = 1 #Factor of noise in data
 
     xy = np.random.rand(N,2)
     x = xy[:,0]; y = xy[:,1]
@@ -50,10 +50,10 @@ if exercise == "a":
 
     """Confidence interval"""
     var_Z = variance_estimator(polydeg,z_train,z_tilde_train)
-    var_beta = np.linalg.pinv(X_train_scaled.T @ X_train_scaled)*var_Z
+    var_beta = np.diag(np.linalg.pinv(X_train_scaled.T @ X_train_scaled))*var_Z
     mean_beta = np.mean(beta)
-    
-    CI_beta_L,CI_beta_U = CI_normal(mean_beta, var_beta, 0.05)
+
+    CI_beta_L,CI_beta_U = CI_normal(beta, var_beta, 0.05)
 
     print("\n-------------------------R2-Score-----------------------------------\n")
     print("The R2 score for the training data is %e using SKLearn" % R2_train_scikit)
@@ -67,6 +67,10 @@ if exercise == "a":
     print(" ")
     print("The MSE score for the test data is %e using SKLearn" % MSE_test_scikit)
     print("The MSE score for the test data is %e using own defined function" % MSE_test)
+    print("\n-------------------------CI-score----------------------------------\n")
+    print(CI_beta_U)
+    print(beta)
+    print(CI_beta_L)
 
 """
 Part b)
