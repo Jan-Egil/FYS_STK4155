@@ -141,7 +141,7 @@ if exercise == "b":
             X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
             X_train, X_test = scale(X_train, X_test)
 
-            MSE_a[i], bias_a[i], var_a[i] = Func_Bootstrap(X_train, X_test, z_train, z_test, n)
+            MSE_a[polydeg-1], bias_a[polydeg-1], var_a[polydeg-1] = Func_Bootstrap(X_train, X_test, z_train, z_test, n, "OLS")
 
         polydeg_array = np.arange(1,MaxPoly+1)
         plt.plot(polydeg_array,bias_a,label="Bias")
@@ -157,14 +157,30 @@ Part c)
 if exercise == "c":
     print("You've come a long way to start with this exercise, haven't you..?")
 
+    N = 100; noise = 1
+    xy = np.random.rand(N,2)
+    x = xy[:,0]; y = xy[:,1]
+    z = frankefunc_noise(x,y,noise)
+    X = DesignMatrixCreator_2dpol(2,x,y)
+    print(X.shape)
+    X_split = np.array(np.array_split(X,5))
+    print(X_split.shape)
+    X_test = X_split[0,:]
+    print(X_test.shape)
+    X_train_mask = np.zeros(X_test.shape)
+    X_train = X_split[1:5].transpose(2,0,1).reshape(80,-1)
+    print(X_train.shape)
+
+
+
 """
 Part d)
 """
 
 if exercise == "d":
-    PolyDeg = 10
-    N = 300
-    noise = 0.3
+    PolyDeg = 5
+    N = 50
+    noise = 1
 
     xy = np.random.rand(N,2)
     x = xy[:,0]; y = xy[:,1]
@@ -173,11 +189,14 @@ if exercise == "d":
 
     lambdavals = np.logspace(-3,5,200)
 
-    z_tilde_test,z_tilde_train,z_test,z_train,X_test_scaled,X_train_scaled,BetaRidge,OptLamb,MSE_lamb = Ridge(X,z,lambdavals)
+    X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+    X_train_scaled, X_test_scaled = scale(X_train, X_test)
+
+    z_tilde_test, z_tilde_train, BetaRidge, OptLamb, MSE_lamb = Ridge(X_train,X_test,z_train,z_test,lambdavals)
 
     plt.plot(lambdavals,MSE_lamb)
     plt.axvline(OptLamb)
-    plt.semilogy();plt.semilogx()
+    plt.semilogx()
     plt.grid()
     plt.xlabel("Value for hyperparameter $\lambda$",fontsize="x-large")
     plt.ylabel("Mean Squared Error (MSE)",fontsize="x-large")
@@ -188,8 +207,33 @@ Part e)
 """
 
 if exercise == "e":
-    print("Just stop scrolling pls")
+    print("Lasso time")
+    PolyDeg = 10
+    N = 500
+    noise = 1
 
+    xy = np.random.rand(N,2)
+    x = xy[:,0]; y = xy[:,1]
+    z = frankefunc_noise(x,y,noise)
+    X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
+
+    X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+
+
+    lambdavals = np.logspace(-3,5,200)
+    MSE_array = np.zeros(len(lambdavals))
+    for i,lamb in enumerate(lambdavals):
+        clf = Lasso(alpha=lamb).fit(X_train,z_train)
+        beta_lasso = clf.coef_
+
+        ztilde_test = X_test @ beta_lasso
+        MSE_array[i] = MSE(z_test,ztilde_test)
+
+
+        #print(clf.predict(X_test))
+    plt.plot(lambdavals,MSE_array)
+    plt.semilogx()
+    plt.show()
 """
 Part f)
 """

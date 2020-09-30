@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 import sklearn.metrics as metric
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
+from sklearn.linear_model import Lasso
 
 def CI_normal(mean,var,alpha):
     """
@@ -249,7 +250,7 @@ def OLS(XTrain, XTest, yTrain, yTest):
 
     return ytildeTest, ytildeTrain, Beta_OLS_optimal
 
-def Ridge(X,y,lamb,testsize=0.2):
+def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
     """
     Performs Ridge regression on a data set and finds the optimal hyperparameter
 
@@ -271,14 +272,9 @@ def Ridge(X,y,lamb,testsize=0.2):
     MSE_lamb: An array with the same length as lambda, contains
     """
 
-    XTrain, XTest, yTrain, yTest = train_test_split(X,y,test_size=testsize)
-    scaler = StandardScaler()
-    scaler.fit(XTrain)
-    XTrainScaled = scaler.transform(XTrain); XTrainScaled[:,0] = 1
-    XTestScaled = scaler.transform(XTest); XTestScaled[:,0] = 1
+    Beta_Ridge = np.zeros((len(lamb),XTrain.shape[1])); MSE_lamb = np.zeros(len(lamb))
 
-    Beta_Ridge = np.zeros((len(lamb),X.shape[1])); MSE_lamb = np.zeros(len(lamb))
-    XTraining, XValidate, yTraining, yValidate = train_test_split(XTrainScaled,yTrain,test_size=testsize)
+    XTraining, XValidate, yTraining, yValidate = train_test_split(XTrain,yTrain,test_size=validate_testsize)
 
     for i,lambval in enumerate(lamb):
         Beta_Ridge[i,:] = np.linalg.pinv(XTraining.T @ XTraining + lambval * np.identity((XTraining.T @ XTraining).shape[0])) @ XTraining.T @ yTraining
@@ -290,10 +286,10 @@ def Ridge(X,y,lamb,testsize=0.2):
     optimalLambda = lamb[np.argmin(MSE_lamb)]
     Beta_Ridge_Optimal = Beta_Ridge[np.argmin(MSE_lamb)]
 
-    ytildeTrain = XTrainScaled @ Beta_Ridge_Optimal
-    ytildeTest = XTestScaled @ Beta_Ridge_Optimal
+    ytildeTrain = XTrain @ Beta_Ridge_Optimal
+    ytildeTest = XTest @ Beta_Ridge_Optimal
 
-    return ytildeTest, ytildeTrain, yTest, yTrain, XTestScaled, XTrainScaled, Beta_Ridge_Optimal, optimalLambda, MSE_lamb
+    return ytildeTest, ytildeTrain, Beta_Ridge_Optimal, optimalLambda, MSE_lamb
 
 def scale(xtrain, xtest):
 
@@ -329,7 +325,8 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
         if method == 'OLS':
             ytilde_test[:,i] = OLS(X, X_test, Y, y_test)[0]
         elif method == 'Ridge':
-            pass
+            lambdavals = np.logspace(-3,5,200)
+            ytilde_test[:,i] = Ridge(X, X_test, Y, y_test,lambdavals)[0]
         elif method == 'Lasso':
             pass
         else:
@@ -344,7 +341,7 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
 
     return mse, Bias, variance
 
-def cross_validation(X,y,K):
+def func_cross_validation(X,y,K):
     """
     Description
 
@@ -355,6 +352,13 @@ def cross_validation(X,y,K):
     OUTPUT:
     idk
     """
+
+    X_split = np.array(np.array_split(X,K,axis=1))
+
+    for i in range(K):
+        X_test = X_split[i,:]
+        X_train = np.delete(X_split[i,:])
+
 
 
 
