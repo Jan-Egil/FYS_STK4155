@@ -163,12 +163,16 @@ if exercise == "c":
     z = frankefunc_noise(x,y,noise)
     X = DesignMatrixCreator_2dpol(2,x,y)
     print(X.shape)
+    i = 0
     X_split = np.array(np.array_split(X,5))
     print(X_split.shape)
-    X_test = X_split[0,:]
+    X_test = X_split[i,:]
     print(X_test.shape)
-    X_train_mask = np.zeros(X_test.shape)
-    X_train = X_split[1:5].transpose(2,0,1).reshape(80,-1)
+    X_train = np.zeros([(X.shape[0]-X_test.shape[0]),X_test.shape[1]])
+    for j in range(5):
+        if i != j:
+            X_train[:,j] = X_split[j]
+    #X_train = X_split[1:5].transpose(2,0,1).reshape(80,-1)
     print(X_train.shape)
 
 
@@ -258,14 +262,17 @@ Part g)
 
 if exercise == "g":
     print("\nWelcome to the bottom.\n")
+
     terrainvar = imread('n59_e010_1arc_v3.tif')
 
     N = 1000
     x = np.random.randint(0,terrainvar.shape[1],size=N)
     y = np.random.randint(0,terrainvar.shape[0],size=N)
 
+    allx = np.copy(terrainvar[1])
+    ally = np.copy(terrainvar[0])
+
     TrainingData = terrainvar[y,x]
-    print(TrainingData)
 
     print("\nDo you want to perform OLS, Ridge, or Lasso regression analysis?")
     print("Type 'a' for OLS, 'b' for Ridge or 'c' for Lasso:\n")
@@ -273,7 +280,39 @@ if exercise == "g":
 
     if choice == 'a':
         #OLS
-        pass
+        PolyDeg = 10
+        X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
+        Ximg = DesignMatrixCreator_2dpol(PolyDeg,allx,ally)
+        Yimg = DesignMatrixCreator_2dpol(PolyDeg,ally,allx)
+
+        X_train, X_test, z_train, z_test = train_test_split(X,TrainingData,test_size=0.2)
+        X_train, X_test = scale(X_train, X_test)
+        X_train, Ximg = scale(X_train,Ximg)
+        X_train, Yimg = scale(X_train,Yimg)
+
+        z_tilde_test, z_tilde_train, beta_optimal = OLS(X_train, X_test, z_train, z_test)
+        MSE_train = MSE(z_train,z_tilde_train)
+        MSE_test = MSE(z_test,z_tilde_test)
+
+        ApproxImgX = Ximg @ beta_optimal
+        ApproxImgY = Yimg @ beta_optimal
+
+        ApproxImg = np.meshgrid(ApproxImgX,ApproxImgY)
+        print(np.array(ApproxImg).shape)
+
+        plt.figure()
+        plt.title("Approximate map",fontsize="x-large")
+        plt.imshow(ApproxImg[0],cmap='gray')
+        plt.xlabel("<-- West - East -->",fontsize="large")
+        plt.ylabel("<-- South - North --->",fontsize="large")
+
+        plt.figure()
+        plt.title("Actual map",fontsize="x-large")
+        plt.imshow(terrainvar,cmap='gray')
+        plt.xlabel("<-- West - East -->",fontsize="large")
+        plt.ylabel("<-- South - North --->",fontsize="large")
+        plt.show()
+
     elif choice == 'b':
         #Ridge
         pass
