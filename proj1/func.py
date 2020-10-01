@@ -38,12 +38,12 @@ def variance_estimator(p,y,ytilde):
     """
     Estimation of unkown variance
 
-    Input:
+    INPUT:
     p: polynomial degree
     y: Array of actual datapoints
     ytilde: Array of predicted datapoints
 
-    Returns:
+    OUTPUT:
     Estimated variance
     """
     if len(y) != len(ytilde):
@@ -229,17 +229,14 @@ def OLS(XTrain, XTest, yTrain, yTest):
     Performs an Ordinary Least Squares (OLS) regression on a data set
 
     INPUT:
-    X: The design matrix of the problem
-    y: The data point sets corresponding to the respective points in the design matrix
-    Testsize: The amount of the full data set should be set aside for testing
+    XTrain: The training design matrix of the problem
+    XTest: The testing design matrix of the problem
+    yTrain: The data point sets corresponding to the respective points in the training design matrix
+    yTest: The data point sets corresponding to the respective points in the test design matrix
 
     OUTPUT:
     ytildeTest: Approximated values corresponding to the test data
     ytildeTrain: Approximated values corresponding to the train data
-    yTest: The "true" data values of the test data
-    yTrain: The "true" data values of the train data
-    XTestScaled: The scaled design matrix corresponding to the test values
-    XTrainScaled: The scaled design matrix corresponding to the train values
     Beta_OLS_optimal: The optimal coefficient values for the best-fit polynomial in OLS
     """
 
@@ -255,18 +252,16 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
     Performs Ridge regression on a data set and finds the optimal hyperparameter
 
     INPUT:
-    X: The design matrix of the problem
-    y the data point sets corresponding to the respective points in the design matrix
+    XTrain: The scaled design matrix corresponding to the train values
+    XTest: The scaled design matrix corresponding to the test values
+    yTrain: The "true" data values of the train data
+    yTest: The "true" data values of the test data
     lamb: an array of potential lambda values we are optimizing for
-    Testsize: (Optional) The amount of the full data set should be set aside for testing
+    validate_testsize: (Optional) The amount of the full data set should be set aside for testing
 
     OUTPUT:
     ytildeTest: Approximated values corresponding to the test data
     ytildeTrain: Approximated values corresponding to the train data
-    yTest: The "true" data values of the test data
-    yTrain: The "true" data values of the train data
-    XTestScaled: The scaled design matrix corresponding to the test values
-    XTrainScaled: The scaled design matrix corresponding to the train values
     Beta_Ridge_Optimal: The optimal coefficient values for the best-fit polynomial using Ridge
     optimalLambda: The optimal value for lambda (where the MSE value is the lowest)
     MSE_lamb: An array with the same length as lambda, contains
@@ -292,6 +287,15 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
     return ytildeTest, ytildeTrain, Beta_Ridge_Optimal, optimalLambda, MSE_lamb
 
 def scale(xtrain, xtest):
+    """
+    Scales the data using the StandardScaler from SKLearn.
+
+    INPUT:
+    xtrain, xtest: Unscaled design matrices
+
+    OUTPUT:
+    xtrain_scaled, xtest_scaled: Scaled design matrices
+    """
 
     scaler = StandardScaler()
     scaler.fit(xtrain)
@@ -310,10 +314,12 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
     y_train: Function values at points corresponding to train values for the design matrix
     y_test: Function values at points corresponding to test values for the design matrix
     n: Number of bootstrap iterations
+    method: method of linear regression to be used ('OLS', 'Ridge', 'Lasso')
 
     OUTPUT:
-    ytilde_train: Matrix with rows corresponding to predicted values for training data.
-    ytilde_test: Matrix with rows corresponding to predicted values for test data
+    mse: The mean value of all of the calculated Mean Squared Errors of all bootstraps
+    Bias: The mean value of all of the calculated Biases of all bootstraps
+    variance: The mean value of all of the calculated Variances of all bootstraps
     """
 
     ytilde_test = np.empty((y_test.shape[0], n))
@@ -330,6 +336,7 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
         elif method == 'Lasso':
             pass
         else:
+            print("You didn't specify a supported regression-method!")
             sys.exit(0)
 
     y_test = y_test[:,np.newaxis]
@@ -343,23 +350,26 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
 
 def func_cross_validation(polydeg,X,y,K, method):
     """
-    Description
+    Performs
 
     INPUT:
     polydeg: the degree of the polynomial
     X: the Design Matrix
+    y: The corresponding data points to the Design Matrix.
     K: the amount of folds we will cross-validate
+    method: method of linear regression to be used ('OLS', 'Ridge', 'Lasso')
 
     OUTPUT:
-    idk
+    MSE_mean: the mean of all the calculated MSE values for every fold.
     """
+
     beta_len = int((2+polydeg)*(1+polydeg)/2)
     X_split = np.array(np.array_split(X,K))
     Y_split = np.array(np.array_split(y,K))
 
     mse = np.zeros(K)
 
-    for i in range(K):
+    for i in range(K): #Runs through every single fold
         X_test = X_split[i]
         Y_test = Y_split[i].ravel()
         X_train = np.concatenate((X_split[:i], X_split[(i+1):]))
@@ -374,7 +384,7 @@ def func_cross_validation(polydeg,X,y,K, method):
 
 if __name__ == '__main__':
     """
-    Felt like adding a name-main section just in case
+    Felt like adding a name-main section just in case it would prove useful.
     """
 
     print("\nYou successfully decided to run the function file instead of the actual file..\n")
