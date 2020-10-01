@@ -341,28 +341,36 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
 
     return mse, Bias, variance
 
-def func_cross_validation(X,y,K):
+def func_cross_validation(polydeg,X,y,K, method):
     """
     Description
 
     INPUT:
+    polydeg: the degree of the polynomial
     X: the Design Matrix
     K: the amount of folds we will cross-validate
 
     OUTPUT:
     idk
     """
+    beta_len = int((2+polydeg)*(1+polydeg)/2)
+    X_split = np.array(np.array_split(X,K))
+    Y_split = np.array(np.array_split(y,K))
 
-    X_split = np.array(np.array_split(X,K,axis=1))
+    mse = np.zeros(K)
 
     for i in range(K):
-        X_test = X_split[i,:]
-        X_train = np.delete(X_split[i,:])
+        X_test = X_split[i]
+        Y_test = Y_split[i].ravel()
+        X_train = np.concatenate((X_split[:i], X_split[(i+1):]))
+        Y_train = np.concatenate((Y_split[:i], Y_split[(i+1):])).ravel()
+        X_train = X_train.reshape(-1, beta_len)
+        X_train, X_test = scale(X_train, X_test)
+        if method == 'OLS':
+            ypred = OLS(X_train, X_test, Y_train, Y_test)[0]
+        mse[i] = MSE(Y_test, ypred)
 
-
-
-
-    pass
+    return np.mean(mse)
 
 if __name__ == '__main__':
     """

@@ -157,24 +157,40 @@ Part c)
 if exercise == "c":
     print("You've come a long way to start with this exercise, haven't you..?")
 
-    N = 100; noise = 1
+    polydeg = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
+
+    N = 200; noise = 1; k = 5
     xy = np.random.rand(N,2)
     x = xy[:,0]; y = xy[:,1]
     z = frankefunc_noise(x,y,noise)
-    X = DesignMatrixCreator_2dpol(2,x,y)
-    print(X.shape)
-    i = 0
-    X_split = np.array(np.array_split(X,5))
-    print(X_split.shape)
-    X_test = X_split[i,:]
-    print(X_test.shape)
-    X_train = np.zeros([(X.shape[0]-X_test.shape[0]),X_test.shape[1]])
-    for j in range(5):
-        if i != j:
-            X_train[:,j] = X_split[j]
-    #X_train = X_split[1:5].transpose(2,0,1).reshape(80,-1)
-    print(X_train.shape)
+    X = DesignMatrixCreator_2dpol(polydeg,x,y)
 
+    mse_crossval = func_cross_validation(polydeg, X, y, k, "OLS")
+    print(mse_crossval)
+
+    """print(X.shape)
+    print(y.shape)
+    print(y)
+    i = 0
+    X_split = np.array(np.array_split(X,k))
+    Y_split = np.array(np.array_split(y,k))
+    print(X_split.shape)
+    print(Y_split.shape)
+    print(Y_split)
+    X_test = X_split[i]
+    Y_test = Y_split[i].ravel()
+    print(Y_test.shape)
+    print(Y_test)
+    X_train = np.concatenate((X_split[:i], X_split[(i+1):]))
+    Y_train = np.concatenate((Y_split[:i], Y_split[(i+1):])).ravel()
+    print(X_train.shape)
+    print(Y_train)
+    X_train = X_train.reshape(-1,6)
+    print(X_train.shape)
+    #print(X_train)
+
+    #X_train = X_split[1:5].transpose(2,0,1).reshape(80,-1)
+    print(X_train.shape)"""
 
 
 """
