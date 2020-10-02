@@ -88,10 +88,8 @@ if exercise == "a":
     """Confidence interval"""
     var_Z = variance_estimator(polydeg,zTrain,z_tilde_train)
     var_beta = np.diag(np.linalg.pinv(X_train.T @ X_train))*var_Z
-    mean_beta = np.mean(beta)
-
     CI_beta_L,CI_beta_U = CI_normal(beta, var_beta, 0.05)
-
+    CIbeta_df = pd.DataFrame(np.transpose(np.array([beta, CI_beta_L, CI_beta_U])),columns=['beta', 'Lower CI', 'Upper CI'])
     print("\n-------------------------R2-Score-----------------------------------\n")
     print("The R2 score for the training data is %e using SKLearn" % R2_train_scikit)
     print("The R2 score for the training data is %e using own defined function" % R2_train)
@@ -105,9 +103,8 @@ if exercise == "a":
     print("The MSE score for the test data is %e using SKLearn" % MSE_test_scikit)
     print("The MSE score for the test data is %e using own defined function" % MSE_test)
     print("\n-------------------------CI-score----------------------------------\n")
-    print(CI_beta_U)
-    print(beta)
-    print(CI_beta_L)
+    print(CIbeta_df)
+
 
 """
 Part b)
