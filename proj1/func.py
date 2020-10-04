@@ -378,6 +378,25 @@ def func_cross_validation(polydeg,X,y,K, method):
         X_train, X_test = scale(X_train, X_test)
         if method == 'OLS':
             ypred = OLS(X_train, X_test, Y_train, Y_test)[0]
+
+        elif method == 'Ridge':
+            lambdavals = np.logspace(-10,5,100)
+            ypred = Ridge(X_train,X_test,Y_train,Y_test,lambdavals)[0]
+
+        elif method == 'Lasso':
+            lambdavals = np.logspace(-10,5,100)
+
+            MSE_test_array = np.zeros(len(lambdavals))
+            Y_tilde_test_array = np.zeros([len(lambdavals),X.shape[0]])
+
+            for i,lamb in enumerate(lambdavals):
+                clf = Lasso(alpha=lamb).fit(X_train,Y_train)
+
+                Y_tilde_test_array[i] = clf.predict(X_test)
+                MSE_test_array[i] = MSE(Y_test,Y_tilde_test_array[i])
+
+            ypred = Y_tilde_test_array[np.argmin(MSE_test_array)]
+
         mse[i] = MSE(Y_test, ypred)
 
     return np.mean(mse)

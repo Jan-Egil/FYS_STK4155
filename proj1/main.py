@@ -57,15 +57,16 @@ Part a)
 """
 
 if exercise == "a":
-    N = 1000
+    N = 200
     polydeg = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
-    noise = 1 #Factor of noise in data
+    noise = 0.2 #Factor of noise in data
 
     xy = np.random.rand(N,2)
     x = xy[:,0]; y = xy[:,1]
 
 
     X = DesignMatrixCreator_2dpol(polydeg,x,y)
+    print(X.shape)
     z = frankefunc_noise(x,y,noise)
 
     X_train, X_test, zTrain, zTest = train_test_split(X,z,test_size=0.2)
@@ -89,7 +90,7 @@ if exercise == "a":
     var_Z = variance_estimator(polydeg,zTrain,z_tilde_train)
     var_beta = np.diag(np.linalg.pinv(X_train.T @ X_train))*var_Z
     CI_beta_L,CI_beta_U = CI_normal(beta, var_beta, 0.05)
-    CIbeta_df = pd.DataFrame(np.transpose(np.array([beta, CI_beta_L, CI_beta_U])),columns=['beta', 'Lower CI', 'Upper CI'])
+    CIbeta_df = pd.DataFrame(np.transpose(np.array([CI_beta_L, beta, CI_beta_U])),columns=['Lower CI', 'beta', 'Upper CI'])
     print("\n-------------------------R2-Score-----------------------------------\n")
     print("The R2 score for the training data is %e using SKLearn" % R2_train_scikit)
     print("The R2 score for the training data is %e using own defined function" % R2_train)
@@ -103,7 +104,20 @@ if exercise == "a":
     print("The MSE score for the test data is %e using SKLearn" % MSE_test_scikit)
     print("The MSE score for the test data is %e using own defined function" % MSE_test)
     print("\n-------------------------CI-score----------------------------------\n")
-    print(CIbeta_df)
+    if polydeg == 5:
+        ticks = ["const","$y$","$x$","$y^2$","$xy$","$x^2$","$y^3$","$xy^2$","$x^2y$","$x^3$",
+        "$y^4$","$xy^3$","$x^2y^2$","$x^3y$","$x^4$","$y^5$","$xy^4$","$x^2y^3$","$x^3y^2$","$x^4y$","$x^5$"]
+        plt.scatter(np.arange(0,21),beta,marker="^",label="$\\beta_j$")
+        plt.errorbar(np.arange(0,21),beta,yerr=[np.abs(beta-CI_beta_L),np.abs(beta-CI_beta_U)],capsize=5,fmt="none",label="95% Confidence intervals")
+        plt.xticks((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),ticks,fontsize="large")
+        plt.legend(); plt.grid()
+        plt.xlabel("Corresponding factor",fontsize="x-large")
+        plt.ylabel("Coefficient value",fontsize="x-large")
+        plt.title("Values for parameters $\\beta$ and corresponding confidence intervals",fontsize="x-large")
+        print(CIbeta_df)
+        plt.show()
+    else:
+        print(CIbeta_df)
 
 
 """
@@ -114,10 +128,11 @@ if exercise == "b": #Complexity vs error, bootstrap & bias-variance analysis
 
     print("\ntype 'a' for complexity vs error plot, type 'b' for bootstrap bias-variance analysis.")
     specifics = input("Type here: ")
+
     if specifics == "a":
         MaxPoly = 20
         N = 200
-        noise = 0.3
+        noise = 0.2
         testsize = 0.2
 
         xy = np.random.rand(N,2)
@@ -208,7 +223,8 @@ if exercise == "d": #Ridge regression
 
     print("Type 'a' for hyperparameter fitting plot, type 'b' for Complexity vs error-plot")
     decisions = input("Please type here: ")
-    if decisions == "a":
+
+    if decisions == "a": #Hyperparameter Fitting
         PolyDeg = 5
         N = 200
         noise = 1
@@ -218,7 +234,7 @@ if exercise == "d": #Ridge regression
         z = frankefunc_noise(x,y,noise)
         X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
 
-        lambdavals = np.logspace(-3,5,200)
+        lambdavals = np.logspace(-10,5,200)
 
         X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
         X_train_scaled, X_test_scaled = scale(X_train, X_test)
@@ -227,23 +243,23 @@ if exercise == "d": #Ridge regression
 
         plt.plot(lambdavals,MSE_lamb,label="Test data MSE")
         plt.axvline(OptLamb,label="$\lambda = $%e"%OptLamb)
-        plt.semilogx()
+        plt.semilogx();
         plt.grid()
-        plt.xlabel("Value for hyperparameter $\lambda$",fontsize="x-large")
-        plt.ylabel("Mean Squared Error (MSE)",fontsize="x-large")
+        plt.xlabel("Value for hyperparameter $\lambda$",fontsize="large")
+        plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
         plt.title("Ridge Hyperparameter fit for $\lambda$",fontsize="x-large")
         plt.legend()
         plt.show()
 
-    elif decisions == "b":
-        MaxPoly = 45
+    elif decisions == "b": #Complexity vs error
+        MaxPoly = 20
         N = 200
         noise = 1
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
         z = frankefunc_noise(x,y,noise)
-        lambdavals = np.logspace(-3,5,9)
+        lambdavals = np.logspace(-10,5,100)
 
         MSE_train_array = np.zeros(MaxPoly)
         MSE_test_array = np.zeros(MaxPoly)
@@ -263,44 +279,99 @@ if exercise == "d": #Ridge regression
         plt.figure()
         plt.plot(polydegs,MSE_train_array,label="Train")
         plt.plot(polydegs,MSE_test_array,label="Test")
-        plt.grid();plt.legend();plt.semilogy()
+        plt.grid(); plt.legend(); plt.semilogy()
         plt.show()
+
+    elif decisions == "c": #Bootstrap
+        pass
+
+    elif decisions == "d": #CV
+        pass
 
 """
 Part e)
 """
 
 if exercise == "e": #Lasso regression
-    print("Lasso time")
-    PolyDeg = 5
-    N = 200
-    noise = 1
 
-    xy = np.random.rand(N,2)
-    x = xy[:,0]; y = xy[:,1]
-    z = frankefunc_noise(x,y,noise)
-    X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
+    print("Type 'a' for hyperparameter fitting plot, type 'b' for Complexity vs error-plot")
+    decisions = input("Please type here: ")
 
-    X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
-    X_train, X_test = scale(X_train, X_test)
+    if decisions == 'a':
+        PolyDeg = 5
+        N = 200
+        noise = 1
 
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+        X = DesignMatrixCreator_2dpol(PolyDeg,x,y)[:,1:]
+        print(X)
 
-    lambdavals = np.logspace(-3,5,200)
-    MSE_array = np.zeros(len(lambdavals))
-    for i,lamb in enumerate(lambdavals):
-        clf = Lasso(alpha=lamb).fit(X_train,z_train)
-        beta_lasso = clf.coef_
-        #ztilde_test = X_test @ beta_lasso
-
-        ztilde_test = clf.predict(X_test)
-
-        MSE_array[i] = MSE(z_test,ztilde_test)
+        X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+        X_train, X_test = scale(X_train, X_test)
 
 
-        #print(clf.predict(X_test))
-    plt.plot(lambdavals,MSE_array)
-    plt.semilogx()
-    plt.show()
+        lambdavals = np.logspace(-10,3,200)
+        MSE_array = np.zeros(len(lambdavals))
+        for i,lamb in enumerate(lambdavals):
+            clf = Lasso(alpha=lamb).fit(X_train,z_train)
+            beta_lasso = clf.coef_
+            #ztilde_test = X_test @ beta_lasso
+
+            ztilde_test = clf.predict(X_test)
+
+            MSE_array[i] = MSE(z_test,ztilde_test)
+
+
+            #print(clf.predict(X_test))
+        plt.plot(lambdavals,MSE_array,label="Test data MSE")
+        plt.axvline(lambdavals[np.argmin(MSE_array)],label="$\lambda$ = %e"%lambdavals[np.argmin(MSE_array)])
+        plt.xlabel("Value for hyperparameter $\lambda$",fontsize="large")
+        plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+        plt.title("Lasso Hyperparameter fit for $\lambda$",fontsize="x-large")
+        plt.semilogx(); plt.grid(); plt.legend()
+        plt.show()
+
+    elif decisions == 'b':
+        MaxPoly = 20
+        N = 500
+        noise = 0.1
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+        lambdavals = np.logspace(-10,5,30)
+
+        MSE_train_array = np.zeros(MaxPoly)
+        MSE_test_array = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+            X_train, X_test = scale(X_train, X_test)
+
+            MSE_array_testlamb = np.zeros(len(lambdavals))
+            MSE_array_trainlamb = np.zeros(len(lambdavals))
+
+            for i, lamb in enumerate(lambdavals):
+                clf = Lasso(alpha=lamb).fit(X_train,z_train)
+
+                ztilde_test = clf.predict(X_test)
+                ztilde_train = clf.predict(X_train)
+
+                MSE_array_testlamb[i] = MSE(z_test,ztilde_test)
+                MSE_array_trainlamb[i] = MSE(z_train,ztilde_train)
+
+            MSE_test_array[polydeg-1] = np.min(MSE_array_testlamb)
+            MSE_train_array[polydeg-1] = MSE_array_trainlamb[np.argmin(MSE_array_testlamb)]
+
+        polydegs = np.arange(1,MaxPoly+1)
+
+        plt.plot(polydegs,MSE_train_array, label="Train")
+        plt.plot(polydegs,MSE_test_array, label="Test")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
 """
 Part f)
@@ -331,7 +402,37 @@ if exercise == "g": #EVERYTHING, but with map data instead
     decisions = input("Please type here: ")
 
     if decisions == "a":
-        pass
+        terrainvar = imread('n59_e010_1arc_v3.tif')
+
+        N = 1000
+        x = np.random.randint(0,terrainvar.shape[1],size=N)
+        y = np.random.randint(0,terrainvar.shape[0],size=N)
+
+        z = terrainvar[y,x]
+
+        MaxPoly = 45
+
+        MSE_testOLS_array = np.zeros(MaxPoly)
+        MSE_trainOLS_array = np.zeros(MaxPoly)
+        MSE_testridge_array = np.zeros(MaxPoly)
+        MSE_testlasso_array = np.zeros(MaxPoly)
+        polydegs = np.arange(1,MaxPoly+1)
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+            X_train, X_test = scale(X_train, X_test)
+
+            z_tilde_test, z_tilde_train, beta_optimal = OLS(X_train, X_test, z_train, z_test)
+
+            MSE_testOLS_array[polydeg-1] = MSE(z_test,z_tilde_test)
+            MSE_trainOLS_array[polydeg-1] = MSE(z_train,z_tilde_train)
+            print(polydeg)
+
+        plt.plot(polydegs,MSE_testOLS_array,label="Test OLS")
+        plt.plot(polydegs,MSE_trainOLS_array,label="Train OLS")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
     elif decisions == "b":
         terrainvar = imread('n59_e010_1arc_v3.tif')
@@ -339,9 +440,6 @@ if exercise == "g": #EVERYTHING, but with map data instead
         N = 1000
         x = np.random.randint(0,terrainvar.shape[1],size=N)
         y = np.random.randint(0,terrainvar.shape[0],size=N)
-
-        allx = np.copy(terrainvar[1])
-        ally = np.copy(terrainvar[0])
 
         TrainingData = terrainvar[y,x]
 
@@ -353,35 +451,32 @@ if exercise == "g": #EVERYTHING, but with map data instead
             #OLS
             PolyDeg = 10
             X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
-            Ximg = DesignMatrixCreator_2dpol(PolyDeg,allx,ally)
-            Yimg = DesignMatrixCreator_2dpol(PolyDeg,ally,allx)
 
             X_train, X_test, z_train, z_test = train_test_split(X,TrainingData,test_size=0.2)
             X_train, X_test = scale(X_train, X_test)
-            X_train, Ximg = scale(X_train,Ximg)
-            X_train, Yimg = scale(X_train,Yimg)
 
             z_tilde_test, z_tilde_train, beta_optimal = OLS(X_train, X_test, z_train, z_test)
+
             MSE_train = MSE(z_train,z_tilde_train)
             MSE_test = MSE(z_test,z_tilde_test)
 
-            ApproxImgX = Ximg @ beta_optimal
-            ApproxImgY = Yimg @ beta_optimal
 
-            ApproxImg = np.meshgrid(ApproxImgX,ApproxImgY)
-            print(np.array(ApproxImg).shape)
 
+            """
             plt.figure()
             plt.title("Approximate map",fontsize="x-large")
-            plt.imshow(ApproxImg[0],cmap='gray')
+            plt.imshow(ApproxImg,cmap='gray')
             plt.xlabel("<-- West - East -->",fontsize="large")
             plt.ylabel("<-- South - North --->",fontsize="large")
+            plt.xticks([]); plt.yticks([])
+            """
 
             plt.figure()
             plt.title("Actual map",fontsize="x-large")
             plt.imshow(terrainvar,cmap='gray')
             plt.xlabel("<-- West - East -->",fontsize="large")
             plt.ylabel("<-- South - North --->",fontsize="large")
+            plt.xticks([]);plt.yticks([])
             plt.show()
 
         elif choice == 'b':
