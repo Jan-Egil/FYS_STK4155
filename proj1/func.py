@@ -7,11 +7,12 @@ import pandas as pd
 import sys
 import scipy.stats as st
 
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 import sklearn.metrics as metric
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, Ridge
+import sklearn.linear_model as skl
 
 def CI_normal(mean,var,alpha):
     """
@@ -116,6 +117,7 @@ def MSE(y,ytilde):
     Mean_Squared_Error: self-explanatory
     """
     if len(y) != len(ytilde):
+        print('wrong')
         sys.exit(0)
     sum = 0
     n = len(y)
@@ -273,7 +275,6 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
 
     for i,lambval in enumerate(lamb):
         Beta_Ridge[i,:] = np.linalg.pinv(XTraining.T @ XTraining + lambval * np.identity((XTraining.T @ XTraining).shape[0])) @ XTraining.T @ yTraining
-
         ytildeValidate = XValidate @ Beta_Ridge[i]
 
         MSE_lamb[i] = MSE(yValidate,ytildeValidate)
@@ -284,7 +285,29 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
     ytildeTrain = XTrain @ Beta_Ridge_Optimal
     ytildeTest = XTest @ Beta_Ridge_Optimal
 
-    return ytildeTest, ytildeTrain, Beta_Ridge_Optimal, optimalLambda, MSE_lamb
+
+
+    """""""""""""""""""""""""""
+    fjern etter ferdig testet!!!!!!!
+    """""""""""""""""""""""""""
+    I = np.identity((XTraining.T @ XTraining).shape[0])
+    MSEPredict = np.zeros(len(lamb))
+    MSEPredictSKL = np.zeros(len(lamb))
+    MSETrain = np.zeros(len(lamb))
+    for i,lambval in enumerate(lamb):
+        lmb = lambval
+        # add ridge
+        clf_ridge = skl.Ridge(alpha=lmb).fit(XTraining, yTraining)
+        yridge = clf_ridge.predict(XValidate)
+        Ridgebeta = np.linalg.inv(XTraining.T @ XTraining+lmb*I) @ XTraining.T @ yTraining
+        # and then make the prediction
+        ytildeRidge = XTraining @ Ridgebeta
+        ypredictRidge = XValidate @ Ridgebeta
+        MSEPredict[i] = MSE(yValidate,ypredictRidge)
+        MSEPredictSKL[i] = MSE(yValidate,yridge)
+        MSETrain[i] = MSE(yTraining,ytildeRidge)
+
+    return ytildeTest, ytildeTrain, Beta_Ridge_Optimal, optimalLambda, MSE_lamb, MSEPredict
 
 def scale(xtrain, xtest):
     """

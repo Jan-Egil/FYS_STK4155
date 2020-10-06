@@ -227,7 +227,7 @@ if exercise == "d": #Ridge regression
     if decisions == "a": #Hyperparameter Fitting
         PolyDeg = 5
         N = 200
-        noise = 1
+        noise = 0.2
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
@@ -239,10 +239,11 @@ if exercise == "d": #Ridge regression
         X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
         X_train_scaled, X_test_scaled = scale(X_train, X_test)
 
-        z_tilde_test, z_tilde_train, BetaRidge, OptLamb, MSE_lamb = Ridge(X_train,X_test,z_train,z_test,lambdavals)
+        z_tilde_test, z_tilde_train, BetaRidge, OptLamb, MSE_lamb, MSE_lamb_skl = Ridge(X_train,X_test,z_train,z_test,lambdavals)
 
-        plt.plot(lambdavals,MSE_lamb,label="Test data MSE")
-        plt.axvline(OptLamb,label="$\lambda = $%e"%OptLamb)
+        plt.plot(lambdavals,MSE_lamb,label="Test data MSE",color = 'g')
+        plt.plot(lambdavals,MSE_lamb_skl,linestyle ='--',dashes=(5, 10), label = 'SKL ridge', color = 'yellow')
+        plt.axvline(OptLamb,label="$\lambda = $%e"%OptLamb,color = 'r')
         plt.semilogx();
         plt.grid()
         plt.xlabel("Value for hyperparameter $\lambda$",fontsize="large")
@@ -254,7 +255,7 @@ if exercise == "d": #Ridge regression
     elif decisions == "b": #Complexity vs error
         MaxPoly = 20
         N = 200
-        noise = 1
+        noise = 0.2
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
