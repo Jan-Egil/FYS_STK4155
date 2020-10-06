@@ -46,7 +46,7 @@ We hope you enjoy your stay here at the Linear Regression-inator
 """
 print(__doc__)
 
-from func import * #Really nasty syntax, importing everything from func.py
+from func import * #Really nasty syntax, importing everything from func.py, including external packages
 
 
 print("\n\nWhich task do you want to run?")
@@ -157,7 +157,7 @@ if exercise == "b": #Complexity vs error, bootstrap & bias-variance analysis
         plt.plot(polydeg_array,MSE_test_array,label="Test")
         plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
         plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
-        plt.title("N = %i, test size = %.1f%%, noise = %.2f"% (N,testsize*100,noise),fontsize="x-large")
+        plt.title("N = %i, test size = %.1f%%, noise = %.2f\nOrdinary Least Squares"% (N,testsize*100,noise),fontsize="x-large")
         plt.legend(); plt.grid(); plt.semilogy()
         plt.show()
 
@@ -227,7 +227,7 @@ if exercise == "d": #Ridge regression
     if decisions == "a": #Hyperparameter Fitting
         PolyDeg = 5
         N = 200
-        noise = 0.2
+        noise = 1
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
@@ -256,6 +256,7 @@ if exercise == "d": #Ridge regression
         MaxPoly = 20
         N = 200
         noise = 0.2
+        testsize = 0.2
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
@@ -267,10 +268,10 @@ if exercise == "d": #Ridge regression
 
         for polydeg in range(1,MaxPoly+1):
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
-            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
             X_train, X_test = scale(X_train, X_test)
 
-            z_tilde_test, z_tilde_train, Beta_Ridge, optimalLambda, MSE_lamb = Ridge(X_train,X_test,z_train,z_test,lambdavals)
+            z_tilde_test, z_tilde_train, Beta_Ridge, optimalLambda, MSE_lamb, MSE_lamb_skl = Ridge(X_train,X_test,z_train,z_test,lambdavals)
 
             MSE_train_array[polydeg-1] = MSE(z_train,z_tilde_train)
             MSE_test_array[polydeg-1] = MSE(z_test,z_tilde_test)
@@ -280,6 +281,9 @@ if exercise == "d": #Ridge regression
         plt.figure()
         plt.plot(polydegs,MSE_train_array,label="Train")
         plt.plot(polydegs,MSE_test_array,label="Test")
+        plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
+        plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+        plt.title("N = %i, test size = %.1f%%, noise = %.2f\nRidge Shrinkage Method"% (N,testsize*100,noise),fontsize="x-large")
         plt.grid(); plt.legend(); plt.semilogy()
         plt.show()
 
@@ -336,8 +340,9 @@ if exercise == "e": #Lasso regression
 
     elif decisions == 'b':
         MaxPoly = 20
-        N = 500
-        noise = 0.1
+        N = 200
+        noise = 0.2
+        testsize = 0.2
 
         xy = np.random.rand(N,2)
         x = xy[:,0]; y = xy[:,1]
@@ -349,7 +354,7 @@ if exercise == "e": #Lasso regression
 
         for polydeg in range(1,MaxPoly+1):
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
-            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
             X_train, X_test = scale(X_train, X_test)
 
             MSE_array_testlamb = np.zeros(len(lambdavals))
@@ -371,8 +376,17 @@ if exercise == "e": #Lasso regression
 
         plt.plot(polydegs,MSE_train_array, label="Train")
         plt.plot(polydegs,MSE_test_array, label="Test")
+        plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
+        plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+        plt.title("N = %i, test size = %.1f%%, noise = %.2f\nLasso Shrinkage Method"% (N,testsize*100,noise),fontsize="x-large")
         plt.grid(); plt.legend(); plt.semilogy()
         plt.show()
+
+    elif decisions == 'c': #Bootstrap
+        pass
+
+    elif decisions == 'd': #CV
+        pass
 
 """
 Part f)
@@ -389,8 +403,9 @@ if exercise == "f": #Plot map data
     plt.figure()
     plt.title("Terrain over the Oslo fjord region",fontsize="x-large")
     plt.imshow(terrainvar,cmap='gray')
-    plt.xlabel("<-- West - East -->",fontsize="large")
-    plt.ylabel("<-- South - North -->",fontsize="large")
+    plt.xlabel("<-- West - East -->",fontsize="x-large")
+    plt.ylabel("<-- South - North -->",fontsize="x-large")
+    plt.xticks([]); plt.yticks([])
     plt.show()
 
 """
@@ -488,3 +503,73 @@ if exercise == "g": #EVERYTHING, but with map data instead
             pass
         else:
             print("\nLol you can't even follow simple instructions")
+
+"""
+Easter egg! Compare the MSEs
+"""
+
+if exercise == "h":
+    print("You just activated an easter egg!")
+    print("We will now present you with an MSE vs complexity plot for all")
+
+    MaxPoly = 30
+    N = 100
+    noise = 2
+    testsize = 0.2
+
+    xy = np.random.rand(N,2)
+    x = xy[:,0]; y = xy[:,1]
+    z = frankefunc_noise(x,y,noise)
+
+    lambdavals = np.logspace(-10,5,100)
+
+    MSE_ols_array = np.zeros(MaxPoly)
+    MSE_ridge_array = np.zeros(MaxPoly)
+    MSE_lasso_array = np.zeros(MaxPoly)
+
+    for polydeg in range(1,MaxPoly+1):
+        print(polydeg)
+
+        X = DesignMatrixCreator_2dpol(polydeg,x,y)
+
+        X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+        X_train, X_test = scale(X_train, X_test)
+
+        """
+        OLS
+        """
+
+        z_tilde_test_ols = OLS(X_train, X_test, z_train, z_test)[0]
+        MSE_ols_array[polydeg-1] = MSE(z_test,z_tilde_test_ols)
+
+        """
+        Ridge
+        """
+
+        z_tilde_test_ridge = Ridge(X_train, X_test, z_train, z_test, lambdavals)[0]
+        MSE_ridge_array[polydeg-1] = MSE(z_test,z_tilde_test_ridge)
+
+        """
+        Lasso
+        """
+
+        MSE_lasso_lamb_array = np.zeros(lambdavals.shape[0])
+
+        for i, lamb in enumerate(lambdavals):
+            clf = Lasso(alpha=lamb).fit(X_train, z_train)
+            z_tilde_test = clf.predict(X_test)
+
+            MSE_lasso_lamb_array[i] = MSE(z_test, z_tilde_test)
+
+        MSE_lasso_array[polydeg-1] = np.min(MSE_lasso_lamb_array)
+
+    polydegs = np.arange(1,MaxPoly+1)
+
+    plt.plot(polydegs, MSE_ols_array, label="OLS")
+    plt.plot(polydegs, MSE_ridge_array, label="Ridge")
+    plt.plot(polydegs, MSE_lasso_array, label="Lasso")
+    plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
+    plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+    plt.title("N = %i, test size = %.1f%%, noise = %.2f"% (N,testsize*100,noise),fontsize="x-large")
+    plt.legend(); plt.grid(); plt.semilogy()
+    plt.show()
