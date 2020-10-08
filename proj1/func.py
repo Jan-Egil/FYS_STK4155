@@ -353,11 +353,26 @@ def Func_Bootstrap(X_train,X_test,y_train,y_test,n, method):
         Y = y_train[rand_idx]
         if method == 'OLS':
             ytilde_test[:,i] = OLS(X, X_test, Y, y_test)[0]
+
         elif method == 'Ridge':
             lambdavals = np.logspace(-3,5,200)
             ytilde_test[:,i] = Ridge(X, X_test, Y, y_test,lambdavals)[0]
+
         elif method == 'Lasso':
-            pass
+            lambdavals = np.logspace(-10,5,100)
+
+            MSE_test_array = np.zeros(len(lambdavals))
+
+            Y_tilde_test_array = np.zeros([len(lambdavals),X_test.shape[0]])
+
+            for j,lamb in enumerate(lambdavals):
+                clf = Lasso(alpha=lamb).fit(X,Y)
+
+                Y_tilde_test_array[j] = clf.predict(X_test)
+                MSE_test_array[j] = MSE(y_test,Y_tilde_test_array[i])
+
+            ytilde_test[:,i] = Y_tilde_test_array[np.argmin(MSE_test_array)]
+
         else:
             print("You didn't specify a supported regression-method!")
             sys.exit(0)
@@ -410,15 +425,19 @@ def func_cross_validation(polydeg,X,y,K, method):
             lambdavals = np.logspace(-10,5,100)
 
             MSE_test_array = np.zeros(len(lambdavals))
-            Y_tilde_test_array = np.zeros([len(lambdavals),X.shape[0]])
+            Y_tilde_test_array = np.zeros([len(lambdavals),X_test.shape[0]])
 
-            for i,lamb in enumerate(lambdavals):
+            for j,lamb in enumerate(lambdavals):
                 clf = Lasso(alpha=lamb).fit(X_train,Y_train)
 
-                Y_tilde_test_array[i] = clf.predict(X_test)
-                MSE_test_array[i] = MSE(Y_test,Y_tilde_test_array[i])
+                Y_tilde_test_array[j] = clf.predict(X_test)
+                MSE_test_array[j] = MSE(Y_test,Y_tilde_test_array[j])
 
             ypred = Y_tilde_test_array[np.argmin(MSE_test_array)]
+
+        else:
+            print("You didn't specify a supported regression-method!")
+            sys.exit(0)
 
         mse[i] = MSE(Y_test, ypred)
 
@@ -427,6 +446,8 @@ def func_cross_validation(polydeg,X,y,K, method):
 if __name__ == '__main__':
     """
     Felt like adding a name-main section just in case it would prove useful.
+
+    EDIT: It proved useful in debugging these functions. However the code used for debugging has been removed.
     """
 
     print("\nYou successfully decided to run the function file instead of the actual file..\n")

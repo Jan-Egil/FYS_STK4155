@@ -178,7 +178,6 @@ if exercise == "b": #Complexity vs error, bootstrap & bias-variance analysis
         bias_a = np.zeros(MaxPoly)
         var_a = np.zeros(MaxPoly)
 
-        i = 0
         for polydeg in range(1,MaxPoly+1):
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
 
@@ -250,7 +249,7 @@ if exercise == "c": #Cross-Validation
         plt.plot(polydegs,mse_bootstrap_array,label="Bootstrap")
         plt.xlabel("Complexity of model (Degree of Polynomial)",fontsize="large")
         plt.ylabel("Error score (MSE)",fontsize="large")
-        plt.title("Cross-Validation vs. Bootstrap.\n N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")        
+        plt.title("Cross-Validation vs. Bootstrap.\n N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")
         plt.grid(); plt.legend(); plt.semilogy()
         plt.show()
 
@@ -261,6 +260,7 @@ Part d)
 if exercise == "d": #Ridge regression
 
     print("Type 'a' for hyperparameter fitting plot, type 'b' for Complexity vs error-plot")
+    print("Type 'c' for Bias-Variance analysis using Bootstrap. Type 'd' to compare bootstrap to Cross-Validation")
     decisions = input("Please type here: ")
 
     if decisions == "a": #Hyperparameter Fitting
@@ -326,11 +326,67 @@ if exercise == "d": #Ridge regression
         plt.grid(); plt.legend(); plt.semilogy()
         plt.show()
 
-    elif decisions == "c": #Bootstrap
-        pass
+    elif decisions == "c": #Bootstrap, Bias-Variance for Ridge
+        print("\nHow many bootstrap runs do you wish to do?")
+        n = int(input("Type here: "))
+        MaxPoly = 20
+        N = 200
+        noise = 1
+        testsize = 0.2
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+
+        MSE_a = np.zeros(MaxPoly)
+        bias_a = np.zeros(MaxPoly)
+        var_a = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+            X_train, X_test = scale(X_train, X_test)
+
+            MSE_a[polydeg-1], bias_a[polydeg-1], var_a[polydeg-1] = Func_Bootstrap(X_train, X_test, z_train, z_test, n, "Ridge")
+
+        polydeg_array = np.arange(1,MaxPoly+1)
+        plt.plot(polydeg_array,bias_a,"--",label="Bias")
+        plt.plot(polydeg_array,var_a,"--",label="Variance")
+        plt.plot(polydeg_array,MSE_a,label="MSE")
+        plt.xlabel("Complexity of model (Degree of Polynomial)",fontsize="large")
+        plt.ylabel("Error score (MSE/Bias/Variance)",fontsize="large")
+        plt.title("Bias-Variance tradeoff. N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
     elif decisions == "d": #CV
-        pass
+        K = int(input("Enter the number of desired folds: "))
+        n = int(input("Enter the number of desired bootstraps: "))
+        N = 200; noise = 1; MaxPoly = 20; testsize = 0.2
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+
+        mse_crossval_array = np.zeros(MaxPoly)
+        mse_bootstrap_array = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+            X_train, X_test = scale(X_train, X_test)
+
+            mse_crossval_array[polydeg-1] = func_cross_validation(polydeg, X, z, K, "Ridge")
+            mse_bootstrap_array[polydeg-1] = Func_Bootstrap(X_train, X_test, z_train, z_test, n, "Ridge")[0]
+
+        polydegs = np.arange(1,MaxPoly+1)
+        plt.plot(polydegs,mse_crossval_array,label="Cross Validation")
+        plt.plot(polydegs,mse_bootstrap_array,label="Bootstrap")
+        plt.xlabel("Complexity of model (Degree of Polynomial)",fontsize="large")
+        plt.ylabel("Error score (MSE)",fontsize="large")
+        plt.title("Cross-Validation vs. Bootstrap.\n N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
 """
 Part e)
@@ -339,6 +395,7 @@ Part e)
 if exercise == "e": #Lasso regression
 
     print("Type 'a' for hyperparameter fitting plot, type 'b' for Complexity vs error-plot")
+    print("Type 'c' for Bias-Variance analysis using Bootstrap. Type 'd' to compare bootstrap to Cross-Validation")
     decisions = input("Please type here: ")
 
     if decisions == 'a':
@@ -361,14 +418,11 @@ if exercise == "e": #Lasso regression
         for i,lamb in enumerate(lambdavals):
             clf = Lasso(alpha=lamb).fit(X_train,z_train)
             beta_lasso = clf.coef_
-            #ztilde_test = X_test @ beta_lasso
 
             ztilde_test = clf.predict(X_test)
-
             MSE_array[i] = MSE(z_test,ztilde_test)
 
 
-            #print(clf.predict(X_test))
         plt.plot(lambdavals,MSE_array,label="Test data MSE")
         plt.axvline(lambdavals[np.argmin(MSE_array)],label="$\lambda$ = %e"%lambdavals[np.argmin(MSE_array)])
         plt.xlabel("Value for hyperparameter $\lambda$",fontsize="large")
@@ -422,10 +476,66 @@ if exercise == "e": #Lasso regression
         plt.show()
 
     elif decisions == 'c': #Bootstrap
-        pass
+        print("\nHow many bootstrap runs do you wish to do?")
+        n = int(input("Type here: "))
+        MaxPoly = 20
+        N = 200
+        noise = 1
+        testsize = 0.2
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+
+        MSE_a = np.zeros(MaxPoly)
+        bias_a = np.zeros(MaxPoly)
+        var_a = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+            X_train, X_test = scale(X_train, X_test)
+
+            MSE_a[polydeg-1], bias_a[polydeg-1], var_a[polydeg-1] = Func_Bootstrap(X_train, X_test, z_train, z_test, n, "Lasso")
+
+        polydeg_array = np.arange(1,MaxPoly+1)
+        plt.plot(polydeg_array,bias_a,"--",label="Bias")
+        plt.plot(polydeg_array,var_a,"--",label="Variance")
+        plt.plot(polydeg_array,MSE_a,label="MSE")
+        plt.xlabel("Complexity of model (Degree of Polynomial)",fontsize="large")
+        plt.ylabel("Error score (MSE/Bias/Variance)",fontsize="large")
+        plt.title("Bias-Variance tradeoff. N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
     elif decisions == 'd': #CV
-        pass
+        K = int(input("Enter the number of desired folds: "))
+        n = int(input("Enter the number of desired bootstraps: "))
+        N = 100; noise = 0.2; MaxPoly = 20; testsize = 0.2
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+
+        mse_crossval_array = np.zeros(MaxPoly)
+        mse_bootstrap_array = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+            X_train, X_test = scale(X_train, X_test)
+
+            mse_crossval_array[polydeg-1] = func_cross_validation(polydeg, X, z, K, "Lasso")
+            mse_bootstrap_array[polydeg-1] = Func_Bootstrap(X_train, X_test, z_train, z_test, n, "Lasso")[0]
+
+        polydegs = np.arange(1,MaxPoly+1)
+        plt.plot(polydegs,mse_crossval_array,label="Cross Validation")
+        plt.plot(polydegs,mse_bootstrap_array,label="Bootstrap")
+        plt.xlabel("Complexity of model (Degree of Polynomial)",fontsize="large")
+        plt.ylabel("Error score (MSE)",fontsize="large")
+        plt.title("Cross-Validation vs. Bootstrap.\n N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
 """
 Part f)
@@ -466,6 +576,7 @@ if exercise == "g": #EVERYTHING, but with map data instead
         z = terrainvar[y,x]
 
         MaxPoly = 45
+        testsize = 0.2
 
         MSE_testOLS_array = np.zeros(MaxPoly)
         MSE_trainOLS_array = np.zeros(MaxPoly)
@@ -473,20 +584,47 @@ if exercise == "g": #EVERYTHING, but with map data instead
         MSE_testlasso_array = np.zeros(MaxPoly)
         polydegs = np.arange(1,MaxPoly+1)
         for polydeg in range(1,MaxPoly+1):
+            print(polydeg)
             X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            lambdavals = np.logspace(-10,5,100)
 
-            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=0.2)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
             X_train, X_test = scale(X_train, X_test)
 
             z_tilde_test, z_tilde_train, beta_optimal = OLS(X_train, X_test, z_train, z_test)
 
             MSE_testOLS_array[polydeg-1] = MSE(z_test,z_tilde_test)
             MSE_trainOLS_array[polydeg-1] = MSE(z_train,z_tilde_train)
-            print(polydeg)
 
+            z_tilde_test_ridge = Ridge(X_train, X_test, z_train, z_test, lambdavals)[0]
+
+            MSE_testridge_array[polydeg-1] = MSE(z_test,z_tilde_test_ridge)
+
+            MSE_temp_lasso = np.zeros(len(lambdavals))
+            for i, lamb in enumerate(lambdavals):
+                clf = Lasso(alpha=lamb).fit(X_train,z_train)
+                z_tilde_test_temp = clf.predict(X_test)
+                MSE_temp_lasso[i] = MSE(z_test,z_tilde_test_temp)
+
+            MSE_testlasso_array[polydeg-1] = np.min(MSE_temp_lasso)
+
+        plt.figure()
         plt.plot(polydegs,MSE_testOLS_array,label="Test OLS")
         plt.plot(polydegs,MSE_trainOLS_array,label="Train OLS")
+        plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
+        plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+        plt.title("N = %i, test size = %.1f%%,\nOLS On Topography Map"% (N,testsize*100),fontsize="x-large")
         plt.grid(); plt.legend(); plt.semilogy()
+
+        plt.figure()
+        plt.plot(polydegs,MSE_testOLS_array,label="OLS")
+        plt.plot(polydegs,MSE_testridge_array,label="Ridge")
+        plt.plot(polydegs,MSE_testlasso_array,label="Lasso")
+        plt.xlabel("'Complexity' of model (Polynomial degree)",fontsize="large")
+        plt.ylabel("Mean Squared Error (MSE)",fontsize="large")
+        plt.title("N = %i, test size = %.1f%%,\nMSE of test data on Topopgraphy map"% (N,testsize*100),fontsize="x-large")
+        plt.grid(); plt.legend(); plt.semilogy()
+
         plt.show()
 
     elif decisions == "b":
@@ -542,14 +680,16 @@ if exercise == "g": #EVERYTHING, but with map data instead
             pass
         else:
             print("\nLol you can't even follow simple instructions")
+            sys.exit(0)
 
 """
-Easter egg! Compare the MSEs
+Easter egg! Compare the MSEs for the Franke Function
 """
-
 if exercise == "h":
-    print("You just activated an easter egg!")
-    print("We will now present you with an MSE vs complexity plot for all")
+    print("\nYou just activated an easter egg!")
+    print("\nWe will now present you with an MSE vs complexity plot for all the methods")
+    print("\nThis is for the Franke function only, to be frank.\n")
+    input("Press enter to continue.")
 
     MaxPoly = 30
     N = 100
