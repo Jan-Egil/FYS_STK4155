@@ -394,7 +394,7 @@ def func_cross_validation(polydeg,X,y,K, method):
 
     for i in range(K): #Runs through every single fold
         X_test = X_split[i]
-        Y_test = Y_split[i].ravel()
+        Y_test = Y_split[i]
         X_train = np.concatenate((X_split[:i], X_split[(i+1):]))
         Y_train = np.concatenate((Y_split[:i], Y_split[(i+1):])).ravel()
         X_train = X_train.reshape(-1, beta_len)

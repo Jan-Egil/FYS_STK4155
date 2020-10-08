@@ -132,7 +132,7 @@ if exercise == "b": #Complexity vs error, bootstrap & bias-variance analysis
     if specifics == "a":
         MaxPoly = 20
         N = 200
-        noise = 0.2
+        noise = 1
         testsize = 0.2
 
         xy = np.random.rand(N,2)
@@ -203,17 +203,56 @@ Part c)
 
 if exercise == "c": #Cross-Validation
 
-    polydeg = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
+    print("Press 'a' to check the MSE for cross validation for a given polynomial, varied k")
+    print("Press 'b' to compare the MSE for CV with Bootstrap. Constant k.")
+    decisions = input("Please type here: ")
+    if decisions == 'a':
+        polydeg = int(input("Enter the degree of polynomial you want to approximate: ")) #Order of polynomial
 
-    N = 200; noise = 1; k = 5
-    xy = np.random.rand(N,2)
-    x = xy[:,0]; y = xy[:,1]
-    z = frankefunc_noise(x,y,noise)
-    X = DesignMatrixCreator_2dpol(polydeg,x,y)
+        N = 200; noise = 1; k = np.array([2,4,5,8,10])
 
-    mse_crossval = func_cross_validation(polydeg, X, y, k, "OLS")
-    print(mse_crossval)
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+        X = DesignMatrixCreator_2dpol(polydeg,x,y)
+        mse_crossval_array = np.zeros(k.shape[0])
+        for i, k_val in enumerate(k):
 
+            mse_crossval_array[i] = func_cross_validation(polydeg, X, z, k_val, "OLS")
+
+        crossval_data = {'# of Folds (K)': k, 'Mean Squared Error': mse_crossval_array}
+        crossval_df = pd.DataFrame(data=crossval_data)
+
+        print(crossval_df)
+
+    elif decisions == 'b':
+        K = int(input("Enter the number of desired folds: "))
+        n = int(input("Enter the number of desired bootstraps: "))
+        N = 200; noise = 1; MaxPoly = 20; testsize = 0.2
+
+        xy = np.random.rand(N,2)
+        x = xy[:,0]; y = xy[:,1]
+        z = frankefunc_noise(x,y,noise)
+
+        mse_crossval_array = np.zeros(MaxPoly)
+        mse_bootstrap_array = np.zeros(MaxPoly)
+
+        for polydeg in range(1,MaxPoly+1):
+            X = DesignMatrixCreator_2dpol(polydeg,x,y)
+            X_train, X_test, z_train, z_test = train_test_split(X,z,test_size=testsize)
+            X_train, X_test = scale(X_train, X_test)
+
+            mse_crossval_array[polydeg-1] = func_cross_validation(polydeg, X, z, K, "OLS")
+            mse_bootstrap_array[polydeg-1] = Func_Bootstrap(X_train, X_test, z_train, z_test, n, "OLS")[0]
+
+        polydegs = np.arange(1,MaxPoly+1)
+        plt.plot(polydegs,mse_crossval_array,label="Cross Validation")
+        plt.plot(polydegs,mse_bootstrap_array,label="Bootstrap")
+        plt.xlabel("Complexity of model (Degree of Polynomial)",fontsize="large")
+        plt.ylabel("Error score (MSE)",fontsize="large")
+        plt.title("Cross-Validation vs. Bootstrap.\n N = %i, noise = %.2f, bootstraps=%i"%(N,noise,n),fontsize="x-large")        
+        plt.grid(); plt.legend(); plt.semilogy()
+        plt.show()
 
 """
 Part d)
