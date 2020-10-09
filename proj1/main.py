@@ -658,6 +658,7 @@ if exercise == "g": #EVERYTHING, but with map data instead
 
             for y_indx in range(terrainvar.shape[0]):
                 X_temp = DesignMatrixCreator_2dpol(PolyDeg,np.arange(terrainvar.shape[1]),y_indx*np.ones(terrainvar.shape[1]))
+                X_temp = scale(X_train, X_temp)[1]
                 print(y_indx)
                 ApproxImg[y_indx] = X_temp @ beta_optimal
                 del X_temp
@@ -695,6 +696,7 @@ if exercise == "g": #EVERYTHING, but with map data instead
 
             for y_indx in range(terrainvar.shape[0]):
                 X_temp = DesignMatrixCreator_2dpol(PolyDeg,np.arange(terrainvar.shape[1]),y_indx*np.ones(terrainvar.shape[1]))
+                X_temp = scale(X_train, X_temp)[1]
                 ApproxImg[y_indx] = X_temp @ beta_optimal
                 print(y_indx)
                 del X_temp
@@ -740,6 +742,7 @@ if exercise == "g": #EVERYTHING, but with map data instead
 
             for y_indx in range(terrainvar.shape[0]):
                 X_temp = DesignMatrixCreator_2dpol(PolyDeg,np.arange(terrainvar.shape[1]),y_indx*np.ones(terrainvar.shape[1]))
+                X_temp = scale(X_train,X_temp)[1]
                 ApproxImg[y_indx] = X_temp @ beta_optimal
                 print(y_indx)
                 del X_temp
@@ -765,13 +768,11 @@ if exercise == "g": #EVERYTHING, but with map data instead
             print("\nLol you can't even follow simple instructions")
             sys.exit(0)
 
-    elif decisions == 'c': #MSE with CV
-        pass
-
 
 """
 Easter egg! Compare the MSEs for the Franke Function
 """
+
 if exercise == "h":
     print("\nYou just activated an easter egg!")
     print("\nWe will now present you with an MSE vs complexity plot for all the methods")
