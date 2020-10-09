@@ -104,6 +104,7 @@ if exercise == "a":
     print("The MSE score for the test data is %e using SKLearn" % MSE_test_scikit)
     print("The MSE score for the test data is %e using own defined function" % MSE_test)
     print("\n-------------------------CI-score----------------------------------\n")
+
     if polydeg == 5:
         ticks = ["const","$y$","$x$","$y^2$","$xy$","$x^2$","$y^3$","$xy^2$","$x^2y$","$x^3$",
         "$y^4$","$xy^3$","$x^2y^2$","$x^3y$","$x^4$","$y^5$","$xy^4$","$x^2y^3$","$x^3y^2$","$x^4y$","$x^5$"]
@@ -432,7 +433,7 @@ if exercise == "e": #Lasso regression
         plt.show()
 
     elif decisions == 'b':
-        MaxPoly = 20
+        MaxPoly = 40
         N = 200
         noise = 0.2
         testsize = 0.2
@@ -640,9 +641,9 @@ if exercise == "g": #EVERYTHING, but with map data instead
         print("Type 'a' for OLS, 'b' for Ridge or 'c' for Lasso:\n")
         choice = input("Type here: ")
 
-        if choice == 'a':
-            #OLS
-            PolyDeg = 10
+        if choice == 'a': #OLS
+
+            PolyDeg = 30
             X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
 
             X_train, X_test, z_train, z_test = train_test_split(X,TrainingData,test_size=0.2)
@@ -653,6 +654,8 @@ if exercise == "g": #EVERYTHING, but with map data instead
             MSE_train = MSE(z_train,z_tilde_train)
             MSE_test = MSE(z_test,z_tilde_test)
 
+
+            ApproxImg = ApproxImgArray.reshape
 
 
             """
@@ -681,6 +684,10 @@ if exercise == "g": #EVERYTHING, but with map data instead
         else:
             print("\nLol you can't even follow simple instructions")
             sys.exit(0)
+
+    elif decisions == 'c': #MSE with CV
+
+
 
 """
 Easter egg! Compare the MSEs for the Franke Function
