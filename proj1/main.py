@@ -655,17 +655,17 @@ if exercise == "g": #EVERYTHING, but with map data instead
             MSE_test = MSE(z_test,z_tilde_test)
 
 
-            ApproxImg = ApproxImgArray.reshape
+            ApproxImg = np.zeros(terrainvar.shape)
 
 
-            """
+
             plt.figure()
             plt.title("Approximate map",fontsize="x-large")
             plt.imshow(ApproxImg,cmap='gray')
             plt.xlabel("<-- West - East -->",fontsize="large")
             plt.ylabel("<-- South - North --->",fontsize="large")
             plt.xticks([]); plt.yticks([])
-            """
+
 
             plt.figure()
             plt.title("Actual map",fontsize="x-large")
@@ -686,7 +686,7 @@ if exercise == "g": #EVERYTHING, but with map data instead
             sys.exit(0)
 
     elif decisions == 'c': #MSE with CV
-
+        pass
 
 
 """
