@@ -266,7 +266,8 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
     ytildeTrain: Approximated values corresponding to the train data
     Beta_Ridge_Optimal: The optimal coefficient values for the best-fit polynomial using Ridge
     optimalLambda: The optimal value for lambda (where the MSE value is the lowest)
-    MSE_lamb: An array with the same length as lambda, contains
+    MSE_lamb: An array with the same length as lambda, contains Mean Squared Errors of said lambda values
+    MSEPredict: Same as MSE_lamb, but for SKLearns model
     """
 
     Beta_Ridge = np.zeros((len(lamb),XTrain.shape[1])); MSE_lamb = np.zeros(len(lamb))
@@ -313,7 +314,7 @@ def scale(xtrain, xtest):
     Scales the data using the StandardScaler from SKLearn.
 
     INPUT:
-    xtrain, xtest: Unscaled design matrices
+    xtrain, xtest: Unscaled design matrices (We scale using the first input)
 
     OUTPUT:
     xtrain_scaled, xtest_scaled: Scaled design matrices
