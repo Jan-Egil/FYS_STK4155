@@ -286,10 +286,9 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
     ytildeTest = XTest @ Beta_Ridge_Optimal
 
 
-
-    """""""""""""""""""""""""""
-    fjern etter ferdig testet!!!!!!!
-    """""""""""""""""""""""""""
+    """
+    Comparing Our Ridge to SKLearns
+    """
     I = np.identity((XTraining.T @ XTraining).shape[0])
     MSEPredict = np.zeros(len(lamb))
     MSEPredictSKL = np.zeros(len(lamb))

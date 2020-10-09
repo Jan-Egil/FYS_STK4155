@@ -631,7 +631,7 @@ if exercise == "g": #EVERYTHING, but with map data instead
     elif decisions == "b":
         terrainvar = imread('n59_e010_1arc_v3.tif')
 
-        N = 1000
+        N = 10000
         x = np.random.randint(0,terrainvar.shape[1],size=N)
         y = np.random.randint(0,terrainvar.shape[0],size=N)
 
@@ -654,13 +654,16 @@ if exercise == "g": #EVERYTHING, but with map data instead
             MSE_train = MSE(z_train,z_tilde_train)
             MSE_test = MSE(z_test,z_tilde_test)
 
-
             ApproxImg = np.zeros(terrainvar.shape)
 
-
+            for y_indx in range(terrainvar.shape[0]):
+                X_temp = DesignMatrixCreator_2dpol(PolyDeg,np.arange(terrainvar.shape[1]),y_indx*np.ones(terrainvar.shape[1]))
+                print(y_indx)
+                ApproxImg[y_indx] = X_temp @ beta_optimal
+                del X_temp
 
             plt.figure()
-            plt.title("Approximate map",fontsize="x-large")
+            plt.title("Approximate map\nPolynomial Degree: %i , MSE value: %e"%(PolyDeg,MSE_test),fontsize="x-large")
             plt.imshow(ApproxImg,cmap='gray')
             plt.xlabel("<-- West - East -->",fontsize="large")
             plt.ylabel("<-- South - North --->",fontsize="large")
@@ -675,12 +678,89 @@ if exercise == "g": #EVERYTHING, but with map data instead
             plt.xticks([]);plt.yticks([])
             plt.show()
 
-        elif choice == 'b':
-            #Ridge
-            pass
-        elif choice == 'c':
-            #Lasse
-            pass
+        elif choice == 'b': #Ridge
+            PolyDeg = 30
+            X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
+
+            X_train, X_test, z_train, z_test = train_test_split(X,TrainingData,test_size=0.2)
+            X_train, X_test = scale(X_train, X_test)
+
+            lambdavals = np.logspace(-10,3,100)
+            z_tilde_test, z_tilde_train, beta_optimal = Ridge(X_train, X_test, z_train, z_test, lambdavals)[:3]
+
+            MSE_train = MSE(z_train,z_tilde_train)
+            MSE_test = MSE(z_test,z_tilde_test)
+
+            ApproxImg = np.zeros(terrainvar.shape)
+
+            for y_indx in range(terrainvar.shape[0]):
+                X_temp = DesignMatrixCreator_2dpol(PolyDeg,np.arange(terrainvar.shape[1]),y_indx*np.ones(terrainvar.shape[1]))
+                ApproxImg[y_indx] = X_temp @ beta_optimal
+                print(y_indx)
+                del X_temp
+
+
+            plt.figure()
+            plt.title("Approximate map using Ridge \nPolynomial Degree: %i , MSE value: %e" % (PolyDeg,MSE_test),fontsize="x-large")
+            plt.imshow(ApproxImg,cmap='gray')
+            plt.xlabel("<-- West - East -->",fontsize="large")
+            plt.ylabel("<-- South - North --->",fontsize="large")
+            plt.xticks([]); plt.yticks([])
+
+
+            plt.figure()
+            plt.title("Actual map",fontsize="x-large")
+            plt.imshow(terrainvar,cmap='gray')
+            plt.xlabel("<-- West - East -->",fontsize="large")
+            plt.ylabel("<-- South - North --->",fontsize="large")
+            plt.xticks([]);plt.yticks([])
+            plt.show()
+
+        elif choice == 'c': #Lasso
+            PolyDeg = 30
+            X = DesignMatrixCreator_2dpol(PolyDeg,x,y)
+
+            X_train, X_test, z_train, z_test = train_test_split(X,TrainingData,test_size=0.2)
+            X_train, X_test = scale(X_train, X_test)
+
+            lambdavals = np.logspace(-10,3,100)
+
+            mse_temp_array = np.zeros(lambdavals.shape[0])
+            beta_temp_array = np.zeros([lambdavals.shape[0],X.shape[1]])
+
+            for i, lamb in enumerate(lambdavals):
+                clf = Lasso(alpha=lamb).fit(X_train,z_train)
+                beta_temp_array[i] = clf.coef_
+                mse_temp_array[i] = MSE(z_test,clf.predict(X_test))
+
+            MSE_test = np.min(mse_temp_array)
+            beta_optimal = beta_temp_array[np.argmin(MSE_test)]
+
+            ApproxImg = np.zeros(terrainvar.shape)
+
+            for y_indx in range(terrainvar.shape[0]):
+                X_temp = DesignMatrixCreator_2dpol(PolyDeg,np.arange(terrainvar.shape[1]),y_indx*np.ones(terrainvar.shape[1]))
+                ApproxImg[y_indx] = X_temp @ beta_optimal
+                print(y_indx)
+                del X_temp
+
+
+            plt.figure()
+            plt.title("Approximate map using Lasso \nPolynomial Degree: %i , MSE value: %e" % (PolyDeg,MSE_test),fontsize="x-large")
+            plt.imshow(ApproxImg,cmap='gray')
+            plt.xlabel("<-- West - East -->",fontsize="large")
+            plt.ylabel("<-- South - North --->",fontsize="large")
+            plt.xticks([]); plt.yticks([])
+
+
+            plt.figure()
+            plt.title("Actual map",fontsize="x-large")
+            plt.imshow(terrainvar,cmap='gray')
+            plt.xlabel("<-- West - East -->",fontsize="large")
+            plt.ylabel("<-- South - North --->",fontsize="large")
+            plt.xticks([]);plt.yticks([])
+            plt.show()
+
         else:
             print("\nLol you can't even follow simple instructions")
             sys.exit(0)
