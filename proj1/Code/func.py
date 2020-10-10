@@ -307,7 +307,7 @@ def Ridge(XTrain, XTest, yTrain, yTest,lamb,validate_testsize=0.2):
         MSEPredictSKL[i] = MSE(yValidate,yridge)
         MSETrain[i] = MSE(yTraining,ytildeRidge)
 
-    return ytildeTest, ytildeTrain, Beta_Ridge_Optimal, optimalLambda, MSE_lamb, MSEPredictSKL
+    return ytildeTest, ytildeTrain, Beta_Ridge_Optimal, optimalLambda, MSE_lamb, MSEPredict
 
 def scale(xtrain, xtest):
     """
