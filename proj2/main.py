@@ -9,16 +9,16 @@ Part a)
 """
 
 if exercise == "a":
-
+    p = 2
     n = 100#number of datapoints
 
     x = 2 * np.random.rand(n, 1)
     y = 4 + 3 * x + np.random.randn(n, 1)
 
-    X = DesignMatrixCreator_1dpol(2,x) #Create design matrix
+    X = DesignMatrixCreator_1dpol(p,x) #Create design matrix
 
     """theta from own OLS"""
-    y_,y_tild,theta_ols = OLS(X,X,y,y)
+    y_xx,y_gg,theta_ols = OLS(X,X,y,y)
     print('Theta from OLS: ', theta_ols,'\n')
     """sklearns SGD"""
     sgd_reg = SGDRegressor(max_iter=1000, penalty=None, eta0=0.1)
