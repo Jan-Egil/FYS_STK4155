@@ -151,9 +151,12 @@ def SGD(X,y,n,M,epochs):
     n = number of datapoints
     M = Minibatch size
     epochs = number of iterations over minibatches
+
+    returns:
+    "Optimal" parameters
     """
     m = int(n/M)
-    theta = np.random.randn(2,1) # random initialization
+    theta = np.random.randn(X.shape[1]) # random initialization
     for epoch in range(epochs):
         for j in range(m):
             k = np.random.randint(m)#index to pick random bin
@@ -162,7 +165,7 @@ def SGD(X,y,n,M,epochs):
             gradient = 2*Xk.T@(Xk@theta-yk)#Derivative of cost function
             gamma = learning_schedule(epoch * m + j)
             theta = theta - gamma * gradient
-    return(theta)
+    return theta
 
     """Kode er i stor grad basert på Geron sin tekstbok. """
 
@@ -201,12 +204,13 @@ def FFNN(x,N_n,N_l,*args):
     for i in range(N_l):
         Z = activation_func(x,w,b)
 
+    predict = np.argmax(Z,axis = 1)
     y = 1
     return y
 
 
 
-FFNN([1,2,3],4,1)
+#FFNN([1,2,3],4,1)
 
 
 
