@@ -113,24 +113,17 @@ class NeuralNetwork:
     def train(self):
         indeces = np.arange(self.inputs)
 
-        self.X_data = self.X_data_full
-        self.Y_data = self.Y_data_full
-
-        self.input_train = self.X_data.shape[0]
-
-        self.feed_forward()
-        self.back_propagation()
-
-        '''for i in range(self.epochs):
+        for i in range(self.epochs):
             for j in range(self.iterations):
                 random_indeces = np.random.choice(indeces, size=self.batch_size, replace=False)
+
                 self.X_data = self.X_data_full[random_indeces]
                 self.Y_data = self.Y_data_full[random_indeces]
 
                 self.input_train = self.X_data.shape[0]
 
                 self.feed_forward()
-                self.back_propagation()'''
+                self.back_propagation()
 
 if __name__ == '__main__':
     #testing the neural network on sin^2(x)
@@ -141,21 +134,19 @@ if __name__ == '__main__':
         return np.sin(x)**2
 
     x = np.linspace(0,1,1000)
-    def X(x, p):
+    def X(x):
         n = len(x)
-        X = np.zeros((n, p+1))
+        X = np.zeros((n, 1))
         for i in range(len(x)):
-            for j in range(p+1):
-                X[i,j] = x[i]**j
+            X[i,0] = x[i]
         return X
 
 
 
 
     #plt.show()
-    X_vals = X(x, 2)
+    X_vals = X(x)
     y_vals = y(x)
-    #print(X_vals)
     #print(y_vals)
 
     # one-liner from scikit-learn library
@@ -163,16 +154,15 @@ if __name__ == '__main__':
     test_size = 1 - train_size
     X_train, X_test, Y_train, Y_test = train_test_split(X_vals, y_vals, train_size=train_size,
                                                         test_size=test_size)
-
-    FFNN = NeuralNetwork(X_train, Y_train, hidden_neurons=25, hidden_layers=3, epochs=20, batch_size=100, gamma=0.01, lmbd=0.1)
-    Y_before = FFNN.predict(X_vals)
+    print(X_train[:3], X_train[:3], X_train[:3].shape)
+    FFNN = NeuralNetwork(X_train, Y_train, hidden_neurons=25, hidden_layers=4, epochs=1000, batch_size=100, gamma=0.01, lmbd=0.0)
+    X_pred = np.sort(X_vals, axis=0)
+    Y_before = FFNN.predict(X_pred)
     FFNN.train()
-    Y_vals = FFNN.predict(X_vals)
+    Y_vals = FFNN.predict(X_pred)
 
-    error = Y_vals-y_vals
-
-    plt.plot(x,y_vals, 'g-', label='true functions')
-    plt.plot(x, Y_vals, 'r-', label='after train')
-    plt.plot(x, Y_before, 'b-', label='before train')
+    plt.plot(X_pred,np.sort(y_vals,axis=0), 'g-', label='true functions')
+    plt.plot(X_pred, Y_vals, 'r-', label='after train')
+    plt.plot(X_pred, Y_before, 'b-', label='before train')
     plt.legend()
     plt.show()
