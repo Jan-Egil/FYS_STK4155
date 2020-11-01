@@ -166,7 +166,7 @@ def SGD(X,y,n,M,epochs):
             k = np.random.randint(m) #Index to pick random bin
             X_k = X[k:k+M]
             y_k = y[k:k+M]
-            gradient = 2*X_k.T@((X_k@theta)-y_k) #Derivative of cost function
+            gradient = (2/n)*X_k.T@((X_k@theta)-y_k) #Derivative of (MSE) cost function
             gamma = learning_schedule(epoch * m + j)
             theta = theta - gamma * gradient
     return theta
