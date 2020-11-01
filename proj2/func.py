@@ -137,8 +137,12 @@ def scale(xtrain, xtest):
 def learning_schedule(t):
     """
     Learning schedule that gradually reduces learning rate
-    Input:
+
+    INPUT:
     t = epochs*m+i
+
+    OUTPUT:
+    Learning schedule
     """
     t0,t1 = 5,50
     return t0/(t+t1)
@@ -156,13 +160,13 @@ def SGD(X,y,n,M,epochs):
     "Optimal" parameters
     """
     m = int(n/M)
-    theta = np.random.randn(X.shape[1]) # random initialization
+    theta = np.random.randn(X.shape[1]) #Random initialization
     for epoch in range(epochs):
         for j in range(m):
-            k = np.random.randint(m)#index to pick random bin
-            Xk = X[k:k+M]
-            yk = y[k:k+M]
-            gradient = 2*Xk.T@(Xk@theta-yk)#Derivative of cost function
+            k = np.random.randint(m) #Index to pick random bin
+            X_k = X[k:k+M]
+            y_k = y[k:k+M]
+            gradient = 2*X_k.T@((X_k@theta)-y_k) #Derivative of cost function
             gamma = learning_schedule(epoch * m + j)
             theta = theta - gamma * gradient
     return theta
