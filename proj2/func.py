@@ -147,7 +147,7 @@ def learning_schedule(t):
     t0,t1 = 5,50
     return t0/(t+t1)
 
-def SGD(X,y,n,M,epochs):
+def SGD(X,y,n,M,epochs,costfunc='OLS'):
     """
     Stochastic Gradient Descent
     Input:
@@ -159,17 +159,20 @@ def SGD(X,y,n,M,epochs):
     returns:
     "Optimal" parameters
     """
-    m = int(n/M)
-    theta = np.random.randn(X.shape[1]) #Random initialization
-    for epoch in range(epochs):
-        for j in range(m):
-            k = np.random.randint(m) #Index to pick random bin
-            X_k = X[k:k+M]
-            y_k = y[k:k+M]
-            gradient = (2/n)*X_k.T@((X_k@theta)-y_k) #Derivative of (MSE) cost function
-            gamma = learning_schedule(epoch * m + j)
-            theta = theta - gamma * gradient
-    return theta
+    if costfunc == 'OLS':
+        m = int(n/M)
+        theta = np.random.randn(X.shape[1]) #Random initialization
+        for epoch in range(epochs):
+            for j in range(m):
+                k = np.random.randint(m) #Index to pick random bin
+                X_k = X[k:k+M]
+                y_k = y[k:k+M]
+                gradient = (2/n)*X_k.T@((X_k@theta)-y_k) #Derivative of (MSE) cost function
+                gamma = learning_schedule(epoch * m + j)
+                theta = theta - gamma * gradient
+        return theta
+    elif costfunc == 'Ridge':
+        pass
 
     """Kode er i stor grad basert på Geron sin tekstbok. """
 

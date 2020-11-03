@@ -2,7 +2,7 @@ from func import * #importing everything from func.py, including external packag
 
 #This is the solution to part a) of project 2
 
-n_poly = 18
+n_poly = 40
 MSE_OLS_array = np.zeros(n_poly)
 MSE_SGD_array = np.zeros(n_poly)
 MSE_SGD_sklearn_array = np.zeros(n_poly)
@@ -10,9 +10,9 @@ polydegs = np.arange(1,n_poly+1)
 
 for n in polydegs:
     print(n)
-    N = 100 #Number of data points
+    N = 200 #Number of data points
     polydeg = n #Order of polynomial
-    noise = 0.5 #Factor of noise in data
+    noise = 1 #Factor of noise in data
 
     xy = np.random.rand(N,2) #Create random function parameters
     x = xy[:,0]; y = xy[:,1]
@@ -37,9 +37,9 @@ for n in polydegs:
     sklearns SGD
     """
 
-    sgd_reg = SGDRegressor(max_iter=100, penalty='l2', eta0=0.1)
+    sgd_reg = SGDRegressor(max_iter=200, penalty='l2', eta0=0.1,loss="squared_loss")
     #sgd_reg.fit(x, y.ravel())
-    a = sgd_reg.fit(X_train, zTrain)
+    skl_sgd_model = sgd_reg.fit(X_train, zTrain)
     #print('Theta from sklearn SGD: ', a.coef_,'\n')
 
     """
@@ -56,7 +56,7 @@ for n in polydegs:
 
     MSE_OLS = metric.mean_squared_error(zTest,z_tilde_test)
     MSE_SGD_own = metric.mean_squared_error(zTest,X_test@theta_own_SGD)
-    MSE_SGD_SKLearn = metric.mean_squared_error(zTest,sgd_reg.predict(X_test))
+    MSE_SGD_SKLearn = metric.mean_squared_error(zTest,skl_sgd_model.predict(X_test))
 
     MSE_OLS_array[n-1] = MSE_OLS
     MSE_SGD_array[n-1] = MSE_SGD_own
