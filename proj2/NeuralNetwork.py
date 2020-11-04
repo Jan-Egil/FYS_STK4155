@@ -1,7 +1,7 @@
 import numpy as np
 
 class NeuralNetwork:
-    def __init__(self, X, Y, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd):
+    def __init__(self, X, Y, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, activation_func):
         self.X_data_full = X
         self.Y_data_full = Y
 
@@ -16,6 +16,7 @@ class NeuralNetwork:
         self.iterations = self.inputs // self.batch_size
         self.gamma = gamma
         self.lmbd = lmbd
+        self.activation_func = activation_func
 
         self.create_bias_and_weights()
 
@@ -29,6 +30,25 @@ class NeuralNetwork:
         self.weights_o = np.random.randn(self.hidden_neurons, self.n_outputs)
         self.bias_o = np.zeros(self.n_outputs) + 0.01
 
+    def activation_function(self, z):
+        z = z.copy()
+        if self.activation_func == 'Sigmoid':
+            return(1/(1+np.exp(-z)))
+        if self.activation_func == 'RELU':
+            for i in range(len(z[0])):
+                z[0,i] = max(0.0, z[0,i])
+            return z
+        if self.activation_func == 'Leaky_RELU':
+            alpha = 0.1
+            for i in range(len(z[0])):
+                if z[0,i] < 0.0:
+                    z[0,i] = alpha*z[0,i]
+            return z
+        if self.activation_func == 'SoftMax':
+            exp_term = np.exp(z)
+            return exp_term/np.sum(exp_term, axis=1, keepdims=True)
+
+
     def sigmoid(self, z):
         return(1/(1+np.exp(-z)))
 
@@ -36,29 +56,29 @@ class NeuralNetwork:
         self.a_h = np.zeros((self.hidden_layers, self.input_train, self.hidden_neurons))
 
         self.z_i = self.X_data@self.weights_i + self.bias_i
-        self.a_h[0] = self.sigmoid(self.z_i)
+        self.a_h[0] = self.activation_function(self.z_i)
 
         for i in range(self.hidden_layers-1):
             self.z_h = self.a_h[i]@self.weights_h[i] + self.bias_h[i]
-            self.a_h[i+1] = self.sigmoid(self.z_h)
+            self.a_h[i+1] = self.activation_function(self.z_h)
 
         self.z_o = self.a_h[-1]@self.weights_o + self.bias_o
         #exp_term = np.exp(self.z_o)
         #self.outputs = exp_term/np.sum(np.exp(self.z_o), axis=1, keepdims=True)
-        self.outputs = self.sigmoid(self.z_o)
+        self.outputs = self.activation_function(self.z_o)
 
     def feed_forward_out(self, X):
         z_i = X@self.weights_i + self.bias_i
-        a_h = self.sigmoid(z_i)
+        a_h = self.activation_function(z_i)
 
         for i in range(self.hidden_layers-1):
             z_h = a_h@self.weights_h[i] + self.bias_h[i]
-            a_h = self.sigmoid(z_h)
+            a_h = self.activation_function(z_h)
 
         z_o = a_h@self.weights_o + self.bias_o
         #exp_term = np.exp(z_o)
         #outputs = exp_term/np.sum(np.exp(z_o), axis=1, keepdims=True)
-        outputs = self.sigmoid(z_o).ravel()
+        outputs = self.activation_function(z_o).ravel()
 
         return outputs
 
@@ -157,7 +177,7 @@ if __name__ == '__main__':
     X_train1d, X_test1d, Y_train1d, Y_test1d = train_test_split(X_1D_vals, Y_1d_vals, train_size=train_size1d,
                                                         test_size=test_size1d)
 
-    FFNN1d = NeuralNetwork(X_train1d, Y_train1d, hidden_neurons=25, hidden_layers=4, epochs=1000, batch_size=100, gamma=0.01, lmbd=0.0)
+    """FFNN1d = NeuralNetwork(X_train1d, Y_train1d, hidden_neurons=25, hidden_layers=4, epochs=1000, batch_size=100, gamma=0.01, lmbd=0.0)
     X_pred1d = np.sort(X_1D_vals, axis=0)
     Y_before1d = FFNN1d.predict(X_pred1d)
     FFNN1d.train()
@@ -167,11 +187,13 @@ if __name__ == '__main__':
     plt.plot(X_pred1d, Y_vals1d, 'r-', label='after train')
     plt.plot(X_pred1d, Y_before1d, 'b-', label='before train')
     plt.legend()
-    plt.show()
-    print('mse: ', mse(Y_vals1d, np.sort(Y_1d_vals,axis=0).ravel()))
+    plt.show()"""
+    """    print('mse: ', mse(Y_vals1d, np.sort(Y_1d_vals,axis=0).ravel()))
 
     print(" ")
-    print("2d case: ")
+    print("2d case: ")"""
+
+    x = np.linspace(-1,1,101)
 
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
@@ -196,27 +218,32 @@ if __name__ == '__main__':
     X, Y = np.meshgrid(X, Y)
     Z = z(X,Y)
     des_mat = designMatrix(X,Y)
-    print(des_mat)
+    """print(des_mat)"""
 
     X_vals = designMatrix(X,Y)
     y_vals = z(X,Y).reshape((4,1))
 
     # one-liner from scikit-learn library
-    print(X_vals.shape, y_vals.shape)
+    """print(X_vals.shape, y_vals.shape)"""
 
-    FFNN = NeuralNetwork(X_vals, y_vals, hidden_neurons=30, hidden_layers=4, epochs=1000, batch_size=1, gamma=0.05, lmbd=0.0)
+    FFNN = NeuralNetwork(X_vals, y_vals, hidden_neurons=30, hidden_layers=4, epochs=1000, batch_size=1, gamma=0.05, lmbd=0.0, activation_func="RELU")
+    print(x)
+    ys = FFNN.activation_function(x.reshape(1,101))
+    print(x, ys)
+    plt.plot(x, ys.ravel())
+    plt.show()
     #X_pred = np.sort(X_vals, axis=0)
     Y_before = FFNN.predict(X_vals)
     FFNN.train()
     Y_vals = FFNN.predict(X_vals)
 
-    print("one point fit")
+    """print("one point fit")
     print(Y_before)
     print(Y_vals)
     print(y_vals.ravel())
     print(mse(Y_vals, y_vals.ravel()))
 
-    print("multiple points")
+    print("multiple points")"""
 
     #1 2d point:
 
@@ -231,7 +258,7 @@ if __name__ == '__main__':
     X, Y = np.meshgrid(X, Y)
     Z = z(X,Y)
     des_mat = designMatrix(X,Y)
-    print(des_mat)
+    """print(des_mat)"""
 
 
     # Plot the surface.
@@ -256,9 +283,9 @@ if __name__ == '__main__':
     # one-liner from scikit-learn library
     train_size = 0.8
     test_size = 1 - train_size
-    print(X_vals.shape, y_vals.shape)
+    """print(X_vals.shape, y_vals.shape)"""
     X_train, X_test, Y_train, Y_test = train_test_split(X_vals, y_vals, train_size=train_size)
-    print(X_train.shape, Y_train.shape)
+    """print(X_train.shape, Y_train.shape)"""
 
     FFNN = NeuralNetwork(X_train, Y_train, hidden_neurons=35, hidden_layers=4, epochs=12500, batch_size=10, gamma=0.05, lmbd=0.0)
     #X_pred = np.sort(X_vals, axis=0)
