@@ -158,9 +158,11 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
     returns:
     "Optimal" parameters
     """
+
     """
     This code is largely based on the code in Gerons textbook, ch. 4
     """
+
     m = int(n/M)
     theta = np.random.randn(X.shape[1]) #Random initialization
     if costfunc == 'OLS':
@@ -178,7 +180,7 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
             for j in range(m):
                 k = np.random.randint(m)
                 X_k = X[k:k+M]
-                y_K = y[k:k+M]
+                y_k = y[k:k+M]
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) + 2*lamb*theta
                 #gamma = learning_schedule(epoch * m + j)
                 theta = theta - gamma * gradient
