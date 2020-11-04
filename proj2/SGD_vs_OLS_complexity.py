@@ -1,8 +1,15 @@
 from func import * #importing everything from func.py, including external packages.
+import time
 
 #This is the solution to part a) of project 2
 
-n_poly = 40
+t = time.process_time()
+#do some stuff
+elapsed_time = time.process_time() - t
+
+
+
+n_poly = 20
 MSE_OLS_array = np.zeros(n_poly)
 MSE_SGD_array = np.zeros(n_poly)
 MSE_SGD_sklearn_array = np.zeros(n_poly)
@@ -47,7 +54,7 @@ for n in polydegs:
     """
 
     M = 2 #Minibatch size
-    epochs = 100
+    epochs = 10*X.shape[1]
     Tolerance = 1e-10
 
     theta_own_SGD = SGD(X_train,zTrain,N,M,epochs)

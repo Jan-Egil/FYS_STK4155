@@ -134,7 +134,7 @@ def scale(xtrain, xtest):
 
     return xtrain_scaled, xtest_scaled
 
-def learning_schedule(t):
+def learning_schedule(t,t0=5,t1=50):
     """
     Learning schedule that gradually reduces learning rate
 
@@ -144,10 +144,9 @@ def learning_schedule(t):
     OUTPUT:
     Learning schedule
     """
-    t0,t1 = 5,50
     return t0/(t+t1)
 
-def SGD(X,y,n,M,epochs,costfunc='OLS'):
+def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
     """
     Stochastic Gradient Descent
     Input:
@@ -159,9 +158,12 @@ def SGD(X,y,n,M,epochs,costfunc='OLS'):
     returns:
     "Optimal" parameters
     """
+    """
+    This code is largely based on the code in Gerons textbook, ch. 4
+    """
+    m = int(n/M)
+    theta = np.random.randn(X.shape[1]) #Random initialization
     if costfunc == 'OLS':
-        m = int(n/M)
-        theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
                 k = np.random.randint(m) #Index to pick random bin
@@ -172,9 +174,18 @@ def SGD(X,y,n,M,epochs,costfunc='OLS'):
                 theta = theta - gamma * gradient
         return theta
     elif costfunc == 'Ridge':
-        pass
+        for epoch in range(epochs):
+            for j in range(m):
+                k = np.random.randint(m)
+                X_k = X[k:k+M]
+                y_K = y[k:k+M]
+                gradient = (2/n)*X_k.T@((X_k@theta)-y_k) + 2*lamb*theta
+                #gamma = learning_schedule(epoch * m + j)
+                theta = theta - gamma * gradient
+        return theta
 
-    """Kode er i stor grad basert på Geron sin tekstbok. """
+
+
 
 def logistic_sigmoid(x):
     return 1/(1+np.exp(-x))
