@@ -32,7 +32,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, test_size = 
 
 
 log_reg = LogisticRegression()
-log_reg.fit(X, y)
+log_reg.fit(X_train, Y_train)
 
 # choose some random images to display
 indices = np.arange(n_inputs)

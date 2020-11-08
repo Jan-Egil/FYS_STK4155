@@ -237,7 +237,12 @@ def FFNN(x,N_n,N_l,*args):
     y = 1
     return y
 
-
+def accuracy_score(y,t):
+    n = len(t)
+    sum = 0
+    for i in range(n):
+        sum += y[i] == t[i]
+    return sum/n
 
 #FFNN([1,2,3],4,1)
 
