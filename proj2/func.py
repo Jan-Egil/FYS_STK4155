@@ -184,7 +184,16 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) + 2*lamb*theta
                 #gamma = learning_schedule(epoch * m + j)
                 theta = theta - gamma * gradient
-        return theta
+    elif costfunc == 'logistic':
+            for epoch in range(epochs):
+                for j in range(m):
+                    k = np.random.randint(m)
+                    X_k = X[k:k+M]
+                    y_k = y[k:k+M]
+                    gradient = log_reg_cost()
+                    #gamma = learning_schedule(epoch * m + j)
+                    theta = theta - gamma * gradient
+                return theta
 
 
 
