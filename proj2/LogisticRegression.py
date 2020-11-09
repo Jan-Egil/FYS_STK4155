@@ -36,15 +36,6 @@ def somefunc(y):
     return 0
 
 
-"""Logistic Regression cost function (log loss)"""
-def log_reg_cost(X,Y,w,b,learning_rate):
-    m = X.shape[0]
-    print(X.shape)
-    p_hat = activation_func(X,w,b,'softmax')
-    J = -np.sum(Y.T*np.log(p_hat) + (1-Y.T)*np.log(1-p_hat))/m
-    dJ = (X.T @ (p_hat - Y.T).T)/m#learning rate here
-    return J,dJ
-
 def plot_random_numbers():
     # choose some random images to display
     indices = np.arange(n_inputs)
@@ -55,6 +46,14 @@ def plot_random_numbers():
         plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
         plt.title("Label: %d" % digits.target[random_indices[i]])
     plt.show()
+
+"""Logistic Regression cost function (log loss)"""
+def log_reg_cost(X,Y,weights,beta,learning_rate):
+    m = X.shape[0]
+    p_hat = activation_func(X,weights,beta,'softmax')
+    J = - (np.sum(-Y.T * np.log(p_hat) - (1-Y).T*np.log(1-p_hat)))/m
+    dJ = -(X.T @ (-p_hat + Y.T).T)/m + learning_rate * weights#learning rate here
+    return J,dJ
 
 """Last opp håndskrevne tall fra sklearn
    Opplastingskode fra https://compphysics.github.io/MachineLearning/doc/pub/week41/html/week41.html """
@@ -79,17 +78,28 @@ train_size = 0.8
 test_size = 1 - train_size
 X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, test_size = 0.2)
 
-print(X_train.shape)
+
 
 log_reg = LogisticRegression()
-log_reg.fit(X_train, Y_train)
+print(log_reg.fit(X_train, Y_train))
 
-b = 0
-w = np.ones([X_train.shape[1],Y_train.shape[0]])
-log_reg_cost(X_train,Y_train,w,b,1)
+"""
+log reg Inspiration from [https://medium.com/@awjuliani/simple-softmax-in-python-tutorial-d6b4c4ed5c16]
+"""
+b = 0#np.zeros([X_train.shape[1],Y_train.shape[0]])
+weights = np.zeros([X_train.shape[1],Y_train.shape[0]])
+iterations = 200
+learning_rate = 1e-5
+losses = []
+for i in range(0,iterations):
+    cost,gradient = log_reg_cost(X_train,Y_train,weights,b,1)
+    losses.append(cost)
+    weights = weights - (learning_rate * gradient)
 
+print(cost)
 
-
+plt.plot(losses)
+plt.show()
 
 
 
