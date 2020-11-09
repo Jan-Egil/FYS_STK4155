@@ -201,15 +201,25 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
 def logistic_sigmoid(x):
     return 1/(1+np.exp(-x))
 
-def activation_func(x,w,b):
+def softmax(z):
+    exp_term = np.exp(z)
+    return exp_term/np.sum(exp_term, axis=1, keepdims=True)
+
+def activation_func(x,w,b,method):
     """
     input:
     1. x = function input
     2. w = wheights
     3. b = bias
     """
-    z = x @ w + b
-    return logistic_sigmoid(z)
+    if method == 'sigmoid':
+        z = x @ w + b
+        return logistic_sigmoid(z)
+    if method == 'softmax':
+        z = x @ w + b
+        return softmax(z)
+    else:
+        return None
 
 def FFNN(x,N_n,N_l,*args):
     """
@@ -229,9 +239,8 @@ def FFNN(x,N_n,N_l,*args):
         w = np.random.rand(len(x),N_l)
         b = np.random.rand(N_l)
 
-
     for i in range(N_l):
-        Z = activation_func(x,w,b)
+        Z = activation_func(x,w,b,'sigmoid')
 
     predict = np.argmax(Z,axis = 1)
     y = 1
