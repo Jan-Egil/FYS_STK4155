@@ -146,7 +146,7 @@ def learning_schedule(t,t0=5,t1=50):
     """
     return t0/(t+t1)
 
-def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
+def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0,classes=2):
     """
     Stochastic Gradient Descent
     Input:
@@ -164,8 +164,8 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
     """
 
     m = int(n/M)
-    theta = np.random.randn(X.shape[1]) #Random initialization
     if costfunc == 'OLS':
+        theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
                 k = np.random.randint(m) #Index to pick random bin
@@ -176,6 +176,7 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
                 theta = theta - gamma * gradient
         return theta
     elif costfunc == 'Ridge':
+        theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
                 k = np.random.randint(m)
@@ -184,16 +185,19 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0):
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) + 2*lamb*theta
                 #gamma = learning_schedule(epoch * m + j)
                 theta = theta - gamma * gradient
-    elif costfunc == 'logistic':
-            for epoch in range(epochs):
-                for j in range(m):
-                    k = np.random.randint(m)
-                    X_k = X[k:k+M]
-                    y_k = y[k:k+M]
-                    gradient = log_reg_cost()
-                    #gamma = learning_schedule(epoch * m + j)
-                    theta = theta - gamma * gradient
-                return theta
+        return theta
+    elif costfunc == 'Logistic':
+        theta = np.random.randn(X.shape[1],classes) #Random initialization
+        for epoch in range(epochs):
+            print(epoch)
+            gradient = np.zeros(classes)
+            for j in range(n):
+                likely = X[j]@theta
+                for clas in range(classes):
+                    likelyhood = likely[clas]/np.sum(likely)
+                    gradient[clas] += X[j,clas]*((y[j]==clas)-likelyhood)
+            theta = theta - gamma * gradient
+        return theta
 
 
 
