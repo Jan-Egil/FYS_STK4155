@@ -1,6 +1,6 @@
 import numpy as np
 
-class NeuralNetwork:
+class FFNeuralNetwork:
     def __init__(self, X, Y, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, activation_func):
         self.X_data_full = X
         self.Y_data_full = Y
@@ -148,9 +148,10 @@ class NeuralNetwork:
                 self.feed_forward()
                 self.back_propagation()
 
+
 if __name__ == '__main__':
     #testing the neural network on sin^2(x)
-    import matplotlib.pyplot as plt
+    """import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
 
     def mse(y, y_tilde):
@@ -175,7 +176,7 @@ if __name__ == '__main__':
     train_size1d = 0.8
     test_size1d = 1 - train_size1d
     X_train1d, X_test1d, Y_train1d, Y_test1d = train_test_split(X_1D_vals, Y_1d_vals, train_size=train_size1d,
-                                                        test_size=test_size1d)
+                                                        test_size=test_size1d)"""
 
     """FFNN1d = NeuralNetwork(X_train1d, Y_train1d, hidden_neurons=25, hidden_layers=4, epochs=1000, batch_size=100, gamma=0.01, lmbd=0.0)
     X_pred1d = np.sort(X_1D_vals, axis=0)
@@ -193,7 +194,7 @@ if __name__ == '__main__':
     print(" ")
     print("2d case: ")"""
 
-    x = np.linspace(-1,1,101)
+    """x = np.linspace(-1,1,101)
 
     from mpl_toolkits.mplot3d import Axes3D
     from matplotlib import cm
@@ -217,16 +218,16 @@ if __name__ == '__main__':
     Y = np.array([0.0, 0.5])
     X, Y = np.meshgrid(X, Y)
     Z = z(X,Y)
-    des_mat = designMatrix(X,Y)
+    des_mat = designMatrix(X,Y)"""
     """print(des_mat)"""
 
-    X_vals = designMatrix(X,Y)
-    y_vals = z(X,Y).reshape((4,1))
+    """X_vals = designMatrix(X,Y)
+    y_vals = z(X,Y).reshape((4,1))"""
 
     # one-liner from scikit-learn library
     """print(X_vals.shape, y_vals.shape)"""
 
-    FFNN = NeuralNetwork(X_vals, y_vals, hidden_neurons=30, hidden_layers=4, epochs=1000, batch_size=1, gamma=0.05, lmbd=0.0, activation_func="RELU")
+    """FFNN = FFNeuralNetwork(X_vals, y_vals, hidden_neurons=30, hidden_layers=4, epochs=1000, batch_size=1, gamma=0.05, lmbd=0.0, activation_func="RELU")
     print(x)
     ys = FFNN.activation_function(x.reshape(1,101))
     print(x, ys)
@@ -235,7 +236,7 @@ if __name__ == '__main__':
     #X_pred = np.sort(X_vals, axis=0)
     Y_before = FFNN.predict(X_vals)
     FFNN.train()
-    Y_vals = FFNN.predict(X_vals)
+    Y_vals = FFNN.predict(X_vals)"""
 
     """print("one point fit")
     print(Y_before)
@@ -249,7 +250,7 @@ if __name__ == '__main__':
 
     #2D:
 
-    fig = plt.figure()
+    """fig = plt.figure()
     ax = fig.gca(projection='3d')
 
     # Make data.
@@ -257,11 +258,11 @@ if __name__ == '__main__':
     Y = np.arange(0,1,0.1)
     X, Y = np.meshgrid(X, Y)
     Z = z(X,Y)
-    des_mat = designMatrix(X,Y)
+    des_mat = designMatrix(X,Y)"""
     """print(des_mat)"""
 
 
-    # Plot the surface.
+    """# Plot the surface.
     surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
                            linewidth=0, antialiased=False)
 
@@ -282,12 +283,12 @@ if __name__ == '__main__':
 
     # one-liner from scikit-learn library
     train_size = 0.8
-    test_size = 1 - train_size
+    test_size = 1 - train_size"""
     """print(X_vals.shape, y_vals.shape)"""
-    X_train, X_test, Y_train, Y_test = train_test_split(X_vals, y_vals, train_size=train_size)
+    """X_train, X_test, Y_train, Y_test = train_test_split(X_vals, y_vals, train_size=train_size)"""
     """print(X_train.shape, Y_train.shape)"""
 
-    FFNN = NeuralNetwork(X_train, Y_train, hidden_neurons=35, hidden_layers=4, epochs=12500, batch_size=10, gamma=0.05, lmbd=0.0)
+    """FFNN = FFNeuralNetwork(X_train, Y_train, hidden_neurons=35, hidden_layers=4, epochs=12500, batch_size=10, gamma=0.05, lmbd=0.0)
     #X_pred = np.sort(X_vals, axis=0)
     Y_before = FFNN.predict(X_vals[46])
     FFNN.train()
@@ -299,4 +300,4 @@ if __name__ == '__main__':
     print(Y_before)
     print(Y_vals)
     print(y_vals[46])
-    print(mse(Y_vals, y_vals[46].ravel()))
+    print(mse(Y_vals, y_vals[46].ravel()))"""
