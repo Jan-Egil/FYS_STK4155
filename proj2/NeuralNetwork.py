@@ -1,7 +1,7 @@
 import numpy as np
 
 class FFNeuralNetwork:
-    def __init__(self, X, Y, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, activation_func):
+    def __init__(self, X, Y, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, out_func):
         self.X_data_full = X
         self.Y_data_full = Y
 
@@ -16,56 +16,96 @@ class FFNeuralNetwork:
         self.iterations = self.inputs // self.batch_size
         self.gamma = gamma
         self.lmbd = lmbd
-        self.activation_func = activation_func
+        self.out_func = out_func
+        self.activ_func = 'Sigmoid'
 
         self.create_bias_and_weights()
 
     def create_bias_and_weights(self):
-        self.weights_i = np.random.randn(self.features, self.hidden_neurons)
+        self.weights_i = np.random.randn(self.features, self.hidden_neurons)*2/np.sqrt(self.features+self.hidden_neurons)
         self.bias_i = np.zeros(self.hidden_neurons) + 0.01
 
-        self.weights_h = np.random.randn(self.hidden_layers-1, self.hidden_neurons, self.hidden_neurons)
+        self.weights_h = np.random.randn(self.hidden_layers-1, self.hidden_neurons, self.hidden_neurons)*2/np.sqrt(2*self.hidden_neurons)
         self.bias_h = np.zeros((self.hidden_layers-1, self.hidden_neurons)) + 0.01
 
-        self.weights_o = np.random.randn(self.hidden_neurons, self.n_outputs)
+        self.weights_o = np.random.randn(self.hidden_neurons, self.n_outputs)*2/np.sqrt(self.hidden_neurons+self.n_outputs)
         self.bias_o = np.zeros(self.n_outputs) + 0.01
 
     def activation_function(self, z):
         z = z.copy()
-        if self.activation_func == 'Sigmoid':
+        results = np.zeros(z.shape)
+
+        if self.activ_func == 'Sigmoid':
             return(1/(1+np.exp(-z)))
-        if self.activation_func == 'RELU':
-            for i in range(len(z[0])):
-                z[0,i] = max(0.0, z[0,i])
+        if self.activ_func == 'RELU':
+            for j in range(len(z)):
+                for i in range(len(z[0])):
+                    results[j,i] = max(0.0, z[j,i])
+            return results
+        if self.activ_func == 'Leaky_RELU':
+            self.alpha = 0.01
+            for j in range(len(z)):
+                for i in range(len(z[0])):
+                    if z[j,i] < 0.0:
+                        results[j,i] = self.alpha*z[j,i]
+                    else:
+                        results[j,i] = z[j,i]
+            return results
+
+    def derivatives(self,z):
+        results = np.zeros(z.shape)
+        if self.activ_func == 'Sigmoid':
+            return self.activation_function(z)*(1-self.activation_function(z))
+        if self.activ_func == 'RELU':
+            for j in range(len(z)):
+                for i in range(len(z[0])):
+                    if z[j,i] > 0:
+                        results[j,i] = 1
+            return results
+        if self.activ_func == 'Leaky_RELU':
+            self.alpha = 0.01
+            for j in range(len(z)):
+                for i in range(len(z[0])):
+                    if z[j,i] < 0.0:
+                        results[j,i] = self.alpha
+                    else:
+                        results[j,i] = 1
+            return results
+
+    def output_function(self, z):
+        results = z.copy()
+        if self.out_func == 'Sigmoid':
+            return(1/(1+np.exp(-z)))
+        if self.out_func == 'RELU':
+            for j in range(len(z)):
+                for i in range(len(z[0])):
+                    results[j,i] = max(0.0, z[j,i])
+            return results
+        if self.out_func == 'Leaky_RELU':
+            self.alpha = 0.01
+            for j in range(len(z)):
+                for i in range(len(z[0])):
+                    if z[j,i] < 0.0:
+                        results[j,i] = self.alpha*z[j,i]
             return z
-        if self.activation_func == 'Leaky_RELU':
-            alpha = 0.1
-            for i in range(len(z[0])):
-                if z[0,i] < 0.0:
-                    z[0,i] = alpha*z[0,i]
-            return z
-        if self.activation_func == 'SoftMax':
+        if self.out_func == 'SoftMax':
             exp_term = np.exp(z)
             return exp_term/np.sum(exp_term, axis=1, keepdims=True)
 
-
-    def sigmoid(self, z):
-        return(1/(1+np.exp(-z)))
-
     def feed_forward(self):
         self.a_h = np.zeros((self.hidden_layers, self.input_train, self.hidden_neurons))
+        self.z_h = np.zeros((self.hidden_layers-1, self.input_train, self.hidden_neurons))
 
         self.z_i = self.X_data@self.weights_i + self.bias_i
         self.a_h[0] = self.activation_function(self.z_i)
 
         for i in range(self.hidden_layers-1):
-            self.z_h = self.a_h[i]@self.weights_h[i] + self.bias_h[i]
-            self.a_h[i+1] = self.activation_function(self.z_h)
+            self.z_h[i] = self.a_h[i]@self.weights_h[i] + self.bias_h[i]
+            self.a_h[i+1] = self.activation_function(self.z_h[i])
 
         self.z_o = self.a_h[-1]@self.weights_o + self.bias_o
-        #exp_term = np.exp(self.z_o)
-        #self.outputs = exp_term/np.sum(np.exp(self.z_o), axis=1, keepdims=True)
-        self.outputs = self.activation_function(self.z_o).ravel()
+
+        self.outputs = self.output_function(self.z_o).ravel()
 
     def feed_forward_out(self, X):
         z_i = X@self.weights_i + self.bias_i
@@ -76,18 +116,14 @@ class FFNeuralNetwork:
             a_h = self.activation_function(z_h)
 
         z_o = a_h@self.weights_o + self.bias_o
-        #exp_term = np.exp(z_o)
-        #outputs = exp_term/np.sum(np.exp(z_o), axis=1, keepdims=True)
-        outputs = self.activation_function(z_o).ravel()
+
+        outputs = self.output_function(z_o).ravel()
 
         return outputs
 
     def back_propagation(self):
-        error_o = self.outputs-self.Y_data
-        error_o = np.expand_dims(error_o, axis=1)
-        error_h = error_o@self.weights_o.T * self.a_h[-1] *(1-self.a_h[-1])
-        #print(error_o.shape, error_h.shape)
-        #print("after error")
+        error_o = np.expand_dims(2/self.n_outputs*(self.outputs-self.Y_data), axis=1)
+        error_h = error_o@self.weights_o.T * self.derivatives(self.z_h[-1])
 
         self.weight_gradient_o = self.a_h[-1].T@error_o
         self.bias_gradient_o = np.sum(error_o, axis=0)
@@ -99,16 +135,15 @@ class FFNeuralNetwork:
             self.weight_gradient_o += self.lmbd*self.weights_o
             self.weight_gradient_h += self.lmbd*self.weights_h[-1]
 
-        #print(self.weight_gradient_o.shape, self.weights_o.shape)
         self.weights_o -= self.gamma*self.weight_gradient_o
         self.bias_o -= self.gamma*self.bias_gradient_o
         self.weights_h[-1] -= self.gamma*self.weight_gradient_h
         self.bias_h[-1] -= self.gamma*self.bias_gradient_h
 
         for j in range(self.hidden_layers-2, 0, -1):
-            error_h = error_h@self.weights_h[j].T*self.a_h[j]*(1-self.a_h[j])
+            error_new = error_h@self.weights_h[j].T*self.derivatives(self.z_h[j-1])#*self.a_h[j]*(1-self.a_h[j])
 
-            self.weight_gradient_h = self.a_h[j-1].T@error_h
+            self.weight_gradient_h = self.a_h[j-1].T@error_new
             self.bias_gradient_h = np.sum(error_h, axis=0)
 
             if self.lmbd > 0.0:
@@ -116,8 +151,9 @@ class FFNeuralNetwork:
 
             self.weights_h[j-1] -= self.gamma*self.weight_gradient_h
             self.bias_h[j-1] -= self.gamma*self.bias_gradient_h
+            error_h = error_new
 
-        error_i = error_h@self.weights_h[0].T*self.a_h[0]*(1-self.a_h[0])
+        error_i = error_h@self.weights_h[0].T*self.derivatives(self.z_i)
 
         self.weight_gradient_i = self.X_data.T@error_i
         self.bias_gradient_i = np.sum(error_i, axis=0)
@@ -135,8 +171,8 @@ class FFNeuralNetwork:
     def train(self):
         indeces = np.arange(self.inputs)
 
-        for i in range(self.epochs):
-            for j in range(self.iterations):
+        for i in range(self.epochs):#(self.epochs):#self.epochs
+            for j in range(self.iterations):#(self.iterations):#self.iterations
                 random_indeces = np.random.choice(indeces, size=self.batch_size, replace=False)
 
                 self.X_data = self.X_data_full[random_indeces]
@@ -152,6 +188,7 @@ if __name__ == '__main__':
     from sklearn.model_selection import train_test_split
     from func import *
     import matplotlib.pyplot as plt
+    np.random.seed(5513)
 
     N = 1000
 
@@ -172,175 +209,42 @@ if __name__ == '__main__':
 
     X = D2_desmat(x,y)
 
-    hidden_neurons = 15
-    hidden_layers = 4
-    epochs = np.array([1000])
-    batch_size = 100
-    gamma = 0.01
+    hidden_neurons = 125
+    hidden_layers = 2
+    epochs = 10000
+    batch_size = 40
+    confusion_matrix = np.zeros([6,11])
+    gamma = 0.0001
     lmbd = 0
 
     X_train, X_test, z_train, z_test = train_test_split(X, z, train_size=0.8)
 
-    for i in range(len(epochs)):
-        FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs[i], batch_size, gamma, lmbd, activation_func='Sigmoid')
-        z_prev = FFNN.predict(X_test)
-        FFNN.train()
-        z_pred = FFNN.predict(X_test)
+    for i in range(1):
+        for j in range(1):
+            FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, out_func='Sigmoid')
+            z_prev = FFNN.predict(X_train[:2])
+            FFNN.train()
+            z_pred = FFNN.predict(X_test)
+            z_predict = FFNN.predict(X_train[:2])
+            print(z_train[:2], frankefunc_noise(X_train[:2,0], X_train[:2,1], 0))
+            print(z_predict)
+            print(z_prev)
 
-        mse = MSE(z_test, z_pred)
+            print(MSE(z_train[:2], z_predict))
+            print(MSE(z_test, z_pred))
+            confusion_matrix[i,j] = MSE(z_test, z_pred)
 
-    plt.plot(epochs, mse)
-    plt.xscale('log')
-    plt.show()
-    print(mse)
-    #testing the neural network on sin^2(x)
-    """import matplotlib.pyplot as plt
-    from sklearn.model_selection import train_test_split
-
-    def mse(y, y_tilde):
-        n = len(y)
-        mse = np.sum((y-y_tilde)**2)
-        return mse/n
-
-    def y(x):
-        return np.sin(x**2)
-
-    def D1_desmat(x):
-        n = len(x)
-        matrix=np.zeros((n,1))
-        for i in range(n):
-            matrix[i,0] = x[i]
-        return matrix
-
-    x = np.linspace(0,1,1000)
-    X_1D_vals = D1_desmat(x)
-    Y_1d_vals = y(x).reshape(1000,1)
-
-    train_size1d = 0.8
-    test_size1d = 1 - train_size1d
-    X_train1d, X_test1d, Y_train1d, Y_test1d = train_test_split(X_1D_vals, Y_1d_vals, train_size=train_size1d,
-                                                        test_size=test_size1d)"""
-
-    """FFNN1d = NeuralNetwork(X_train1d, Y_train1d, hidden_neurons=25, hidden_layers=4, epochs=1000, batch_size=100, gamma=0.01, lmbd=0.0)
-    X_pred1d = np.sort(X_1D_vals, axis=0)
-    Y_before1d = FFNN1d.predict(X_pred1d)
-    FFNN1d.train()
-    Y_vals1d = FFNN1d.predict(X_pred1d)
-
-    plt.plot(X_pred1d,np.sort(Y_1d_vals,axis=0), 'g-', label='true functions')
-    plt.plot(X_pred1d, Y_vals1d, 'r-', label='after train')
-    plt.plot(X_pred1d, Y_before1d, 'b-', label='before train')
-    plt.legend()
-    plt.show()"""
-    """    print('mse: ', mse(Y_vals1d, np.sort(Y_1d_vals,axis=0).ravel()))
-
-    print(" ")
-    print("2d case: ")"""
-
-    """x = np.linspace(-1,1,101)
-
-    from mpl_toolkits.mplot3d import Axes3D
-    from matplotlib import cm
-    from matplotlib.ticker import LinearLocator, FormatStrFormatter
-    import numpy as np
-
-    def z(x,y):
-        return np.sin(x**2) * np.cos(y**2)
-
-    def designMatrix(x,y):
-        x = x.ravel()
-        y = y.ravel()
-        matrix = np.zeros((len(x), 2))
-        for i in range(len(x)):
-            matrix[i,0] = x[i]
-            matrix[i,1] = y[i]
-        return matrix
-
-    # Make data.
-    X = np.array([0.9, 0.5])
-    Y = np.array([0.0, 0.5])
-    X, Y = np.meshgrid(X, Y)
-    Z = z(X,Y)
-    des_mat = designMatrix(X,Y)"""
-    """print(des_mat)"""
-
-    """X_vals = designMatrix(X,Y)
-    y_vals = z(X,Y).reshape((4,1))"""
-
-    # one-liner from scikit-learn library
-    """print(X_vals.shape, y_vals.shape)"""
-
-    """FFNN = FFNeuralNetwork(X_vals, y_vals, hidden_neurons=30, hidden_layers=4, epochs=1000, batch_size=1, gamma=0.05, lmbd=0.0, activation_func="RELU")
-    print(x)
-    ys = FFNN.activation_function(x.reshape(1,101))
-    print(x, ys)
-    plt.plot(x, ys.ravel())
-    plt.show()
-    #X_pred = np.sort(X_vals, axis=0)
-    Y_before = FFNN.predict(X_vals)
+    '''FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs, batch_size, gamma=0.001, lmbd=0.1, out_func='Leaky_RELU')
+    z_prev = FFNN.predict(X_train[:2])
     FFNN.train()
-    Y_vals = FFNN.predict(X_vals)"""
+    z_pred = FFNN.predict(X_train[:2])
+    #z_predict = FFNN.predict(X_test)
+    print(z_train[:2], frankefunc_noise(X_train[:2,0], X_train[:2,1], 0))
+    print(z_pred)
+    print(z_prev)
 
-    """print("one point fit")
-    print(Y_before)
-    print(Y_vals)
-    print(y_vals.ravel())
-    print(mse(Y_vals, y_vals.ravel()))
+    print(MSE(z_train[:2], z_pred))'''
 
-    print("multiple points")"""
-
-    #1 2d point:
-
-    #2D:
-
-    """fig = plt.figure()
-    ax = fig.gca(projection='3d')
-
-    # Make data.
-    X = np.arange(0,1,0.1)
-    Y = np.arange(0,1,0.1)
-    X, Y = np.meshgrid(X, Y)
-    Z = z(X,Y)
-    des_mat = designMatrix(X,Y)"""
-    """print(des_mat)"""
-
-
-    """# Plot the surface.
-    surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
-
-    # Customize the z axis.
-
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-
-    # Add a color bar which maps values to colors.
-    fig.colorbar(surf, shrink=0.5, aspect=5)
-
+    plt.matshow(confusion_matrix, cmap='gray', vmax=0.1)
+    plt.colorbar()
     plt.show()
-
-
-    #plt.show()
-    X_vals = designMatrix(X,Y)
-    y_vals = z(X,Y).reshape((100,1))
-
-    # one-liner from scikit-learn library
-    train_size = 0.8
-    test_size = 1 - train_size"""
-    """print(X_vals.shape, y_vals.shape)"""
-    """X_train, X_test, Y_train, Y_test = train_test_split(X_vals, y_vals, train_size=train_size)"""
-    """print(X_train.shape, Y_train.shape)"""
-
-    """FFNN = FFNeuralNetwork(X_train, Y_train, hidden_neurons=35, hidden_layers=4, epochs=12500, batch_size=10, gamma=0.05, lmbd=0.0)
-    #X_pred = np.sort(X_vals, axis=0)
-    Y_before = FFNN.predict(X_vals[46])
-    FFNN.train()
-    Y_vals = FFNN.predict(X_vals[46])
-
-    print("Results")
-
-    print(X_vals[46], z(X_vals[46,0], X_vals[46,1]))
-    print(Y_before)
-    print(Y_vals)
-    print(y_vals[46])
-    print(mse(Y_vals, y_vals[46].ravel()))"""
