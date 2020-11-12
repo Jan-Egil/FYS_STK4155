@@ -7,12 +7,12 @@ class FFNeuralNetwork:
 
         self.inputs = X.shape[0]
         self.features = X.shape[1]
-        self.hidden_neurons = hidden_neurons
-        self.hidden_layers = hidden_layers
+        self.hidden_neurons = int(hidden_neurons)
+        self.hidden_layers = int(hidden_layers)
         self.n_outputs = 1
 
-        self.epochs = epochs
-        self.batch_size = batch_size
+        self.epochs = int(epochs)
+        self.batch_size = int(batch_size)
         self.iterations = self.inputs // self.batch_size
         self.gamma = gamma
         self.lmbd = lmbd
@@ -65,7 +65,7 @@ class FFNeuralNetwork:
         self.z_o = self.a_h[-1]@self.weights_o + self.bias_o
         #exp_term = np.exp(self.z_o)
         #self.outputs = exp_term/np.sum(np.exp(self.z_o), axis=1, keepdims=True)
-        self.outputs = self.activation_function(self.z_o)
+        self.outputs = self.activation_function(self.z_o).ravel()
 
     def feed_forward_out(self, X):
         z_i = X@self.weights_i + self.bias_i
@@ -84,8 +84,7 @@ class FFNeuralNetwork:
 
     def back_propagation(self):
         error_o = self.outputs-self.Y_data
-        #error_o = np.expand_dims(error_o, axis=1)
-        #print(self.outputs.shape, self.Y_data.shape, error_o.shape)
+        error_o = np.expand_dims(error_o, axis=1)
         error_h = error_o@self.weights_o.T * self.a_h[-1] *(1-self.a_h[-1])
         #print(error_o.shape, error_h.shape)
         #print("after error")
@@ -150,6 +149,50 @@ class FFNeuralNetwork:
 
 
 if __name__ == '__main__':
+    from sklearn.model_selection import train_test_split
+    from func import *
+    import matplotlib.pyplot as plt
+
+    N = 1000
+
+    noise = 0.1 #Factor of noise in data
+
+    xy = np.random.rand(N,2) #Create random function parameters
+    x = xy[:,0]; y = xy[:,1]
+
+    z = frankefunc_noise(x,y,noise)
+
+    def D2_desmat(x, y):
+        n = len(x)
+        matrix=np.zeros((n,2))
+        for i in range(n):
+            matrix[i,0] = x[i]
+            matrix[i,1] = y[i]
+        return matrix
+
+    X = D2_desmat(x,y)
+
+    hidden_neurons = 15
+    hidden_layers = 4
+    epochs = np.array([1000])
+    batch_size = 100
+    gamma = 0.01
+    lmbd = 0
+
+    X_train, X_test, z_train, z_test = train_test_split(X, z, train_size=0.8)
+
+    for i in range(len(epochs)):
+        FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs[i], batch_size, gamma, lmbd, activation_func='Sigmoid')
+        z_prev = FFNN.predict(X_test)
+        FFNN.train()
+        z_pred = FFNN.predict(X_test)
+
+        mse = MSE(z_test, z_pred)
+
+    plt.plot(epochs, mse)
+    plt.xscale('log')
+    plt.show()
+    print(mse)
     #testing the neural network on sin^2(x)
     """import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split

@@ -49,8 +49,8 @@ def DesignMatrixCreator_2dpol(p,x,y):
     X: Design matrix
     """
 
-    if len(x) != len(y):
-        sys.exit(0)
+    #if len(x) != len(y):
+        #sys.exit(0)
 
     if len(x.shape) > 1:
         x = np.ravel(x)
@@ -110,7 +110,7 @@ def frankefunc_noise(x,y,noise):
         y = np.ravel(y)
 
     N = len(x)
-    term1 = 0.75*np.exp(-((9*x-2)**2)/4 - ((9*x-2)**2)/4)
+    term1 = 0.75*np.exp(-((9*x-2)**2)/4 - ((9*y-2)**2)/4)
     term2 = 0.75*np.exp(-((9*x+1)**2)/49 - (9*y+1)/10)
     term3 = 0.5*np.exp(-((9*x-7)**2)/4 - ((9*y-3)**2)/4)
     term4 = 0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
@@ -256,6 +256,12 @@ def accuracy_score(y,t):
     for i in range(n):
         sum += y[i] == t[i]
     return sum/n
+
+def MSE(y, y_tilde):
+    n = len(y)
+    mse = np.sum((y-y_tilde)**2)
+    return mse/n
+
 
 #FFNN([1,2,3],4,1)
 
