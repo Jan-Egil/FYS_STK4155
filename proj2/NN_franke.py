@@ -2,10 +2,11 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from NeuralNetwork import FFNeuralNetwork
 from func import *
+import matplotlib.pyplot as plt
 
-N = 10
+N = 1000
 
-noise = 0.2 #Factor of noise in data
+noise = 0.1 #Factor of noise in data
 
 xy = np.random.rand(N,2) #Create random function parameters
 x = xy[:,0]; y = xy[:,1]
@@ -22,18 +23,24 @@ def D2_desmat(x, y):
 
 X = D2_desmat(x,y)
 
-hidden_neurons = 25
+hidden_neurons = 15
 hidden_layers = 4
-epochs = 100
-batch_size = 2
-gamma = 0.1
-lmbd = 0.0
+epochs = np.array([1000])
+batch_size = 100
+gamma = 0.01
+lmbd = 0
 
 X_train, X_test, z_train, z_test = train_test_split(X, z, train_size=0.8)
 
-FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, activation_func='Sigmoid')
-z_prev = FFNN.predict(X)
-FFNN.train()
-z_pred = FFNN.predict(X)
+for i in range(len(epochs)):
+    FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs[i], batch_size, gamma, lmbd, activation_func='Sigmoid')
+    z_prev = FFNN.predict(X_test)
+    FFNN.train()
+    z_pred = FFNN.predict(X_test)
 
-print(z, z_prev, z_pred)
+    mse = MSE(z_test, z_pred)
+
+plt.plot(epochs, mse)
+plt.xscale('log')
+plt.show()
+print(mse)
