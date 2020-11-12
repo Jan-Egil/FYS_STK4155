@@ -1,16 +1,11 @@
 from func import *
-import time
 
-t = time.process_time()
-#do some stuff
-elapsed_time = time.process_time() - t
+lambvals = np.logspace(-8,-1,8)
+learning_rates = np.logspace(-3,0,4)
 
-lambvals = np.logspace(-10,-6,10)
-learning_rates = np.logspace(-10,-6,10)
-
-polydeg = 10 #Degree of polynomial fit
-N = 200 #Number of data points
-noise = 1 #Noise in data
+polydeg = 15 #Degree of polynomial fit
+N = 2000 #Number of data points
+noise = 0.2 #Noise in data
 
 xy = np.random.rand(N,2) #Create random function parameters
 x = xy[:,0]; y = xy[:,1]
@@ -24,7 +19,7 @@ X_train, X_test = scale(X_train, X_test) #Properly scale the data
 matrixplot = np.zeros([lambvals.shape[0],learning_rates.shape[0]])
 
 M = 2 #Minibatch size
-epochs = 10*X.shape[1]
+epochs = 200
 
 for lambindex,lambval in enumerate(lambvals):
     print(lambindex)
@@ -34,6 +29,11 @@ for lambindex,lambval in enumerate(lambvals):
         MSE_val = metric.mean_squared_error(zTest,X_test@theta_own_SGD_Ridge)
         matrixplot[lambindex,learnindex] = MSE_val
 
-
-plt.matshow(matrixplot)
+plt.matshow(matrixplot,cmap='gray',vmax=1)
+plt.colorbar()
+plt.xlabel("Learning Rates",fontsize="x-large")
+plt.ylabel("$\lambda$",fontsize="x-large")
+plt.title("MSE using SGD Ridge for different learning rates\nand different hyperparameter $\lambda$\n",fontsize="x-large")
+plt.yticks(np.arange(lambvals.shape[0]),lambvals)
+plt.xticks(np.arange(learning_rates.shape[0]),learning_rates,rotation=90)
 plt.show()
