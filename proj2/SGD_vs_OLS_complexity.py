@@ -2,7 +2,7 @@ from func import * #importing everything from func.py, including external packag
 
 #This is the solution to part a) of project 2
 
-n_poly = 20
+n_poly = 40
 MSE_OLS_array = np.zeros(n_poly)
 MSE_SGD_array = np.zeros(n_poly)
 MSE_SGD_sklearn_array = np.zeros(n_poly)
@@ -10,8 +10,8 @@ polydegs = np.arange(1,n_poly+1)
 
 for polydeg in polydegs:
     print(polydeg)
-    N = 200 #Number of data points
-    noise = 1 #Factor of noise in data
+    N = 2000 #Number of data points
+    noise = 0.2 #Factor of noise in data
 
     xy = np.random.rand(N,2) #Create random function parameters
     x = xy[:,0]; y = xy[:,1]
@@ -46,8 +46,7 @@ for polydeg in polydegs:
     """
 
     M = 2 #Minibatch size
-    epochs = 10*X.shape[1]
-    Tolerance = 1e-10
+    epochs = 500
 
     theta_own_SGD = SGD(X_train,zTrain,N,M,epochs)
 
@@ -64,8 +63,9 @@ for polydeg in polydegs:
 
 plt.plot(polydegs,MSE_OLS_array,label="OLS")
 plt.plot(polydegs,MSE_SGD_array,label="SGD")
-plt.plot(polydegs,MSE_SGD_sklearn_array,label="SKLearn")
+#plt.plot(polydegs,MSE_SGD_sklearn_array,label="SKLearn")
 plt.grid(); plt.legend(); plt.semilogy()
-plt.xlabel("Complexity of model")
-plt.ylabel("MSE")
+plt.xlabel("Complexity of model",fontsize="large")
+plt.ylabel("MSE",fontsize="large")
+plt.title("MSE against 'complexity of model'",fontsize="x-large")
 plt.show()

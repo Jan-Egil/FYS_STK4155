@@ -13,11 +13,20 @@ theta = SGD(images_train,targets_train,n,M,epochs,costfunc='Logistic',gamma=0.00
 
 pred_test = images_test @ theta
 
+confusion = np.zeros([10,10])
+
 sum = 0
 for i in range(targets_test.shape[0]):
-    sum += targets_test[i]==np.argmax(pred_test[i])
+    sum += targets_test[i]==np.argmin(pred_test[i])
+    print(targets_test[i])
+    confusion[int(targets_test[i]),int(np.argmin(pred_test[i]))] += 1
 sum = sum/targets_test.shape[0]
 print("%.2f%%" % (sum*100))
+
+plt.matshow(confusion,cmap='gray')
+plt.xlabel("Predicted integer")
+plt.ylabel("Correct integer")
+plt.show()
 
 
 """

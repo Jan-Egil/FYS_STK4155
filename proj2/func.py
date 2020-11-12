@@ -168,7 +168,7 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0,classes=2):
         theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
-                k = np.random.randint(m) #Index to pick random bin
+                k = np.random.randint(n-M) #Index to pick random bin
                 X_k = X[k:k+M]
                 y_k = y[k:k+M]
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) #Derivative of (MSE) cost function
@@ -179,7 +179,7 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0,classes=2):
         theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
-                k = np.random.randint(m)
+                k = np.random.randint(n-M)
                 X_k = X[k:k+M]
                 y_k = y[k:k+M]
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) + 2*lamb*theta
@@ -206,8 +206,8 @@ def logistic_sigmoid(x):
     return 1/(1+np.exp(-x))
 
 def softmax(z):
-    exp_term = np.exp(z)
-    return exp_term/np.sum(exp_term, axis=1, keepdims=True)
+    exp_term = np.exp(z-np.max(z))
+    return exp_term/np.sum(np.exp(z-np.max(z)), axis=1, keepdims=True)
 
 def activation_func(x,w,b,method):
     """
