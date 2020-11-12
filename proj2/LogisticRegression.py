@@ -1,33 +1,7 @@
 from func import * #importing everything from func.py, including external packages
-
 from sklearn.linear_model import LogisticRegression
 from sklearn import datasets
 
-
-"""X = digits["data"][:, 3:] # petal width
-y = (digits["target"] == 2).astype(np.int) # 1 if Iris-Virginica, else 0
-
-log_reg = LogisticRegression()
-log_reg.fit(X, y)
-
-X_new = np.linspace(0, 3, 1000).reshape(-1, 1)
-y_proba = log_reg.predict_proba(X_new)
-plt.plot(X_new, y_proba[:, 1], "g-", label="Iris-Virginica")
-plt.plot(X_new, y_proba[:, 0], "b--", label="Not Iris-Virginica") # + more Matplotlib code to make the image look pretty
-plt.show()
-
-#This is the solution to part e) of project 2
-
-X = DesignMatrixCreator_2dpol(polydeg,x,y) #Create design matrix
-
-z = frankefunc_noise(x,y,noise) #
-
-X_train, X_test, zTrain, zTest = train_test_split(X,y,test_size=0.2) #Split data into training and testing set
-X_train, X_test = scale(X_train, X_test) #Properly scale the data
-
-w, b = np.randin
-w ,b = np.random.rand(N), np.random.rand(N)
-"""
 def somefunc(y):
     if y == 1:
         c = -np.log(p_hat)
@@ -55,8 +29,7 @@ def log_reg_cost(X,Y,weights,beta,learning_rate):
     dJ = -(X.T @ (-p_hat + Y.T).T)/m + learning_rate * weights#learning rate here
     return J,dJ
 
-"""Last opp håndskrevne tall fra sklearn
-   Opplastingskode fra https://compphysics.github.io/MachineLearning/doc/pub/week41/html/week41.html """
+"""Last opp håndskrevne tall fra sklearn"""
 # ensure the same random numbers appear every time
 np.random.seed(0)
 # display images in notebook
@@ -72,16 +45,11 @@ labels = digits.target
 # the value -1 means dimension is inferred from the remaining dimensions: 8x8 = 64
 n_inputs = len(inputs)
 inputs = inputs.reshape(n_inputs, -1)
-print("X = (n_inputs, n_features) = " + str(inputs.shape))
+
 
 train_size = 0.8
 test_size = 1 - train_size
 X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, test_size = 0.2)
-
-
-
-log_reg = LogisticRegression()
-print(log_reg.fit(X_train, Y_train))
 
 """
 log reg Inspiration from [https://medium.com/@awjuliani/simple-softmax-in-python-tutorial-d6b4c4ed5c16]
@@ -98,11 +66,50 @@ for i in range(0,iterations):
 
 print(cost)
 
-plt.plot(losses)
+#plt.plot(losses)
+#plt.show()
+
+
+"""Log reg fra sklearn"""
+log_reg = LogisticRegression(fit_intercept=True,
+                        multi_class='auto',
+                        penalty='l2', #ridge regression
+                        solver='saga',
+                        max_iter=10000,
+                        C=50)
+
+log_reg.fit(X_train,Y_train)
+coef = log_reg.coef_.copy()
+#plt.imshow(coef[0].reshape(8,8).round(2))
+#plt.show()
+sucsess_score = log_reg.score(X_test, y_test)
+print(sucsess_score)
+print(log_reg.predict(X_test[0:20]))
+print(Y_test[0:20])
+
+
+
+"""X = digits["data"][:, 3:] # petal width
+y = (digits["target"] == 2).astype(np.int) # 1 if Iris-Virginica, else 0
+
+log_reg = LogisticRegression()
+log_reg.fit(X, y)
+
+X_new = np.linspace(0, 3, 1000).reshape(-1, 1)
+y_proba = log_reg.predict_proba(X_new)
+plt.plot(X_new, y_proba[:, 1], "g-", label="Iris-Virginica")
+plt.plot(X_new, y_proba[:, 0], "b--", label="Not Iris-Virginica") # + more Matplotlib code to make the image look pretty
 plt.show()
 
+#This is the solution to part e) of project 2
 
+X = DesignMatrixCreator_2dpol(polydeg,x,y) #Create design matrix
 
+z = frankefunc_noise(x,y,noise) #
 
+X_train, X_test, zTrain, zTest = train_test_split(X,y,test_size=0.2) #Split data into training and testing set
+X_train, X_test = scale(X_train, X_test) #Properly scale the data
 
-    #
+w, b = np.randin
+w ,b = np.random.rand(N), np.random.rand(N)
+"""
