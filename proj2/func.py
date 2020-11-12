@@ -206,8 +206,8 @@ def logistic_sigmoid(x):
     return 1/(1+np.exp(-x))
 
 def softmax(z):
-    exp_term = np.exp(z)
-    return exp_term/np.sum(exp_term, axis=1, keepdims=True)
+    exp_term = np.exp(z-np.max(z))
+    return exp_term/np.sum(np.exp(z-np.max(z)), axis=1, keepdims=True)
 
 def activation_func(x,w,b,method):
     """
