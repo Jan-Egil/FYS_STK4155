@@ -168,7 +168,7 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0,classes=2):
         theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
-                k = np.random.randint(m) #Index to pick random bin
+                k = np.random.randint(n-M) #Index to pick random bin
                 X_k = X[k:k+M]
                 y_k = y[k:k+M]
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) #Derivative of (MSE) cost function
@@ -179,7 +179,7 @@ def SGD(X,y,n,M,epochs,costfunc='OLS',lamb=0,gamma=0,classes=2):
         theta = np.random.randn(X.shape[1]) #Random initialization
         for epoch in range(epochs):
             for j in range(m):
-                k = np.random.randint(m)
+                k = np.random.randint(n-M)
                 X_k = X[k:k+M]
                 y_k = y[k:k+M]
                 gradient = (2/n)*X_k.T@((X_k@theta)-y_k) + 2*lamb*theta
