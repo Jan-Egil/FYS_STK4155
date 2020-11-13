@@ -2,17 +2,6 @@ from func import * #importing everything from func.py, including external packag
 from sklearn import datasets
 
 
-def plot_random_numbers():
-    # choose some random images to display
-    indices = np.arange(n_inputs)
-    random_indices = np.random.choice(indices, size=5)
-    for i, image in enumerate(digits.images[random_indices]):
-        plt.subplot(1, 5, i+1)
-        plt.axis('off')
-        plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
-        plt.title("Label: %d" % digits.target[random_indices[i]])
-    plt.show()
-
 """
 Logistic Regression cost function (log loss)
 """
