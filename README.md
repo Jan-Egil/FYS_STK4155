@@ -8,6 +8,8 @@
 
 Ordinary Least Squares (OLS), as well as ridge and lasso shrinkage methods have been used. We've also applied bootstrap and cross validation resampling methods.
 
-**Project 2:** TBC
+**Project 2:** Performing linear regression and classification using neural networks. Comparing neural network methods with other standard methods in linear regression and classification.
+
+Neural networks have been compared to OLS methods for linear regression, both for SGD gradient methods and matrix inversion methods. Neural networks have also been compared to softmax logistic regression for classification problems.
 
 **Project 3:** TBC
