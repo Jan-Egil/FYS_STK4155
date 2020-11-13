@@ -2,12 +2,7 @@ from func import * #importing everything from func.py, including external packag
 from sklearn.linear_model import LogisticRegression
 from sklearn import datasets
 
-def somefunc(y):
-    if y == 1:
-        c = -np.log(p_hat)
-    if y == 0:
-        c = -np.log(1-p_hat)
-    return 0
+
 
 
 def plot_random_numbers():
@@ -34,15 +29,15 @@ def log_reg_cost(X,Y,weights,beta,learning_rate):
     return J,dJ
 
 def onehotvec(Y):
-    classes = np.arange(np.max(Y))
+    classes = np.arange(np.max(Y)+1)
     hotvec = np.zeros((len(Y),len(classes)))
     for i in range(len(Y)):
-        hotvec[i,Y[i]-1] = Y[i]
+        hotvec[i,Y[i]] = 1
     return hotvec
 
 """Last opp håndskrevne tall fra sklearn"""
 # ensure the same random numbers appear every time
-np.random.seed(0)
+np.random.seed(123)
 # display images in notebook
 plt.rcParams['figure.figsize'] = (12,12)
 # download MNIST dataset
@@ -71,59 +66,34 @@ b = np.random.uniform(-0.1,0.1,Y_train.shape[1])#0#np.zeros([X_train.shape[1],Y_
 weights = np.random.uniform(-0.1,0.1,[X_train.shape[1],Y_train.shape[1]])
 
 iterations = 1000
-learning_rate = 1e-5
+learning_rate = 1e-2
 losses = []
 for i in range(0,iterations):
     cost,gradient = log_reg_cost(X_train,Y_train,weights,b,1)
     losses.append(cost)
     weights = weights - (learning_rate * gradient)
 
+probability_matrix = X_test@weights
+confusion_matrix = np.zeros([10,10])
+
+acc = 0
+
+for j in range(X_test.shape[0]):
+    prediction = np.argmax(probability_matrix[j])
+    targetval = np.argmax(Y_test[j])
+    acc += prediction == targetval
+    confusion_matrix[prediction,targetval] += 1
+
+
 print(cost)
+print(Y_test.shape[0])
+acc = acc/Y_test.shape[0]
+print(acc)
 
 plt.plot(losses)
 plt.show()
 
-
-"""Log reg fra sklearn"""
-log_reg = LogisticRegression(fit_intercept=True,
-                        multi_class='auto',
-                        penalty='l2', #ridge regression
-                        solver='saga',
-                        max_iter=10000,
-                        C=50)
-
-#log_reg.fit(X_train,Y_train)
-#coef = log_reg.coef_.copy()
-#plt.imshow(coef[0].reshape(8,8).round(2))
-#plt.show()
-#sucsess_score = log_reg.score(X_test, y_test)
-#print(sucsess_score)
-#print(log_reg.predict(X_test[0:20]))
-#print(Y_test[0:20])
-
-
-
-"""X = digits["data"][:, 3:] # petal width
-y = (digits["target"] == 2).astype(np.int) # 1 if Iris-Virginica, else 0
-
-log_reg = LogisticRegression()
-log_reg.fit(X, y)
-
-X_new = np.linspace(0, 3, 1000).reshape(-1, 1)
-y_proba = log_reg.predict_proba(X_new)
-plt.plot(X_new, y_proba[:, 1], "g-", label="Iris-Virginica")
-plt.plot(X_new, y_proba[:, 0], "b--", label="Not Iris-Virginica") # + more Matplotlib code to make the image look pretty
+plt.matshow(confusion_matrix,cmap='gray')
+plt.ylabel("Predicted integer")
+plt.xlabel("Correct integer")
 plt.show()
-
-#This is the solution to part e) of project 2
-
-X = DesignMatrixCreator_2dpol(polydeg,x,y) #Create design matrix
-
-z = frankefunc_noise(x,y,noise) #
-
-X_train, X_test, zTrain, zTest = train_test_split(X,y,test_size=0.2) #Split data into training and testing set
-X_train, X_test = scale(X_train, X_test) #Properly scale the data
-
-w, b = np.randin
-w ,b = np.random.rand(N), np.random.rand(N)
-"""
