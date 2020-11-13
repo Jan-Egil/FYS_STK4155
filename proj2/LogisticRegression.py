@@ -1,8 +1,5 @@
 from func import * #importing everything from func.py, including external packages
-from sklearn.linear_model import LogisticRegression
 from sklearn import datasets
-
-
 
 
 def plot_random_numbers():
@@ -16,7 +13,9 @@ def plot_random_numbers():
         plt.title("Label: %d" % digits.target[random_indices[i]])
     plt.show()
 
-"""Logistic Regression cost function (log loss)"""
+"""
+Logistic Regression cost function (log loss)
+"""
 def log_reg_cost(X,Y,weights,beta,learning_rate):
     m = X.shape[0]
     p_hat = activation_func(X,weights,beta,'softmax')
@@ -38,8 +37,6 @@ def onehotvec(Y):
 """Last opp håndskrevne tall fra sklearn"""
 # ensure the same random numbers appear every time
 np.random.seed(123)
-# display images in notebook
-plt.rcParams['figure.figsize'] = (12,12)
 # download MNIST dataset
 digits = datasets.load_digits()
 
@@ -60,9 +57,9 @@ X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, test_size = 
 
 
 """
-log reg Inspiration from [https://medium.com/@awjuliani/simple-softmax-in-python-tutorial-d6b4c4ed5c16]
+logistic regression start (Code inspired by [https://medium.com/@awjuliani/simple-softmax-in-python-tutorial-d6b4c4ed5c16])
 """
-b = np.random.uniform(-0.1,0.1,Y_train.shape[1])#0#np.zeros([X_train.shape[1],Y_train.shape[0]])
+b = np.random.uniform(-0.1,0.1,Y_train.shape[1])
 weights = np.random.uniform(-0.1,0.1,[X_train.shape[1],Y_train.shape[1]])
 
 iterations = 1000
@@ -94,6 +91,8 @@ plt.plot(losses)
 plt.show()
 
 plt.matshow(confusion_matrix,cmap='gray')
-plt.ylabel("Predicted integer")
-plt.xlabel("Correct integer")
+plt.colorbar()
+plt.title("Confusion Matrix.\nCounts for predicted vs correct integer",fontsize='x-large')
+plt.ylabel("Predicted integer",fontsize='large')
+plt.xlabel("Correct integer",fontsize='large')
 plt.show()
