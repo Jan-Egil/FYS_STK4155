@@ -250,6 +250,25 @@ def FFNN(x,N_n,N_l,*args):
     y = 1
     return y
 
+"""
+Logistic Regression cost function (log loss)
+"""
+def log_reg_cost(X,Y,weights,beta,learning_rate):
+    m = X.shape[0]
+    p_hat = activation_func(X,weights,beta,'softmax') #probabilities
+    J = -np.sum(Y*np.log(p_hat)) #cost
+    dJ = -(X.T @ (-p_hat.T + Y.T).T)/m + learning_rate * weights #gradients
+
+    return J,dJ
+
+def onehotvec(Y):
+    """Convert data to one hot format"""
+    classes = np.arange(np.max(Y)+1)
+    hotvec = np.zeros((len(Y),len(classes)))
+    for i in range(len(Y)):
+        hotvec[i,Y[i]] = 1
+    return hotvec
+
 def accuracy_score(y,t):
     n = len(t)
     sum = 0

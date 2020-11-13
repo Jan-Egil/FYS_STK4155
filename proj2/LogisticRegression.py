@@ -1,28 +1,6 @@
 from func import * #importing everything from func.py, including external packages
 from sklearn import datasets
 
-
-"""
-Logistic Regression cost function (log loss)
-"""
-def log_reg_cost(X,Y,weights,beta,learning_rate):
-    m = X.shape[0]
-    p_hat = activation_func(X,weights,beta,'softmax')
-    J = -np.sum(Y*np.log(p_hat))#- (np.sum(-Y.T * np.log(p_hat) - (1-Y).T*np.log(1-p_hat)))/m
-
-    #da = (-Y/p_hat)
-    #mat = p_hat@(np.ones((1,9))) * (np.identity(9)-np.ones((9,1))@p_hat.T)
-    dJ = -(X.T @ (-p_hat.T + Y.T).T)/m + learning_rate * weights#learning rate here
-
-    return J,dJ
-
-def onehotvec(Y):
-    classes = np.arange(np.max(Y)+1)
-    hotvec = np.zeros((len(Y),len(classes)))
-    for i in range(len(Y)):
-        hotvec[i,Y[i]] = 1
-    return hotvec
-
 """Last opp håndskrevne tall fra sklearn"""
 # ensure the same random numbers appear every time
 np.random.seed(123)
@@ -38,7 +16,6 @@ labels = digits.target
 n_inputs = len(inputs)
 inputs = inputs.reshape(n_inputs, -1)
 
-
 labels = onehotvec(labels)
 train_size = 0.8
 test_size = 1 - train_size
@@ -48,6 +25,8 @@ X_train, X_test, Y_train, Y_test = train_test_split(inputs, labels, test_size = 
 """
 logistic regression start (Code inspired by [https://medium.com/@awjuliani/simple-softmax-in-python-tutorial-d6b4c4ed5c16])
 """
+
+"""Initialize random wheights and biases"""
 b = np.random.uniform(-0.1,0.1,Y_train.shape[1])
 weights = np.random.uniform(-0.1,0.1,[X_train.shape[1],Y_train.shape[1]])
 
@@ -55,6 +34,7 @@ iterations = 1000
 learning_rate = 1e-2
 losses = []
 for i in range(0,iterations):
+    """Train on test data"""
     cost,gradient = log_reg_cost(X_train,Y_train,weights,b,1)
     losses.append(cost)
     weights = weights - (learning_rate * gradient)
