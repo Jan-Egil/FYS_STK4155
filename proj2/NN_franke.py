@@ -41,20 +41,16 @@ X_train, X_test, z_train, z_test = train_test_split(X, z, train_size=0.8)
 
 for i in range(1):
     for j in range(1):
-        FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, out_func='Sigmoid')
+        FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs, batch_size, gamma, lmbd, out_func='Sigmoid', n_outputs=1)
         FFNN.train() # training the Nettwork
         z_pred = FFNN.predict(X_test) # predicting the test data
         z_predict = FFNN.predict(X_train[:2])
-        print(z_train[:2], frankefunc_noise(X_train[:2,0], X_train[:2,1], 0))
-        print(z_predict)
-
-        print(MSE(z_train[:2], z_predict))
         confusion_matrix[i,j] = MSE(z_test, z_pred)
         #mse[i] = MSE(z_test, z_pred)
         #print(mse[i])
         print(MSE(z_test, z_pred))
 
-'''FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons, hidden_layers, epochs, batch_size, gamma=0.001, lmbd=0.1, out_func='Leaky_RELU')
+FFNN = FFNeuralNetwork(X_train, z_train, hidden_neurons=25, hidden_layers=3, epochs=1000, batch_size=25, gamma=0.001, lmbd=0.1, out_func='Leaky_RELU', n_outputs=1)
 z_prev = FFNN.predict(X_train[:2])
 FFNN.train()
 z_pred = FFNN.predict(X_train[:2])
@@ -63,7 +59,7 @@ print(z_train[:2], frankefunc_noise(X_train[:2,0], X_train[:2,1], 0))
 print(z_pred)
 print(z_prev)
 
-print(MSE(z_train[:2], z_pred))'''
+print(MSE(z_train[:2], z_pred))
 
 plt.matshow(confusion_matrix, cmap='gray', vmax=0.1)
 plt.colorbar()
