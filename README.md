@@ -12,4 +12,6 @@ Ordinary Least Squares (OLS), as well as ridge and lasso shrinkage methods have 
 
 Neural networks have been compared to OLS methods for linear regression, both for SGD gradient methods and matrix inversion methods. Neural networks have also been compared to softmax logistic regression for classification problems.
 
-**Project 3:** TBC
+**Authors:** Jan Egil Ødegård
+
+**Project 3:** Trying to solve PDEs and eigenvalue problems using neural networks. This worked out somewhat. Comparing our methods to those of "regular" methods when solving PDEs and finding eigenvectors / eigenvalues of matrices.

@@ -15,3 +15,5 @@ print(symmatrix)
 
 solver = Neural_Network_eigval(init_array,symmatrix,hidden_neurons,num_iter,lmb)
 solver.train()
+eigenvector = solver.output_function(0)
+eigenvalue = (eigenvector.T@symmatrix@eigenvector)/(eigenvector.T@eigenvector)
